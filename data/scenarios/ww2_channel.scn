@@ -1,0 +1,81 @@
+title Dash to the Channel (1940)
+description The front is broken. Race west to the sea and cut the allied armies
+description in two: take Arras, Amiens, Abbeville and the port of Boulogne.
+description Expect an armoured counter-attack around Arras. 18 turns.
+era ww2
+turns 18
+attacker 1
+first 1
+side 1 name=Wehrmacht color=96,104,88 control=human prestige=100 income=30
+side 2 name=Allied_Forces color=150,110,60 control=ai prestige=100 income=15
+map 30 16
+w w . . . . . . . . . . . . h . f f . h . . . . . . . . . .
+w w h . f . . . A . . . . . f . . . . . . . h . . . . . h f
+w h . . f . h h . . . . . . . . f . . . . . . . . . . . A h
+w w . C . = . . . . . f . . . f . . f . . . . . . . . h . .
+w w . . = . = = = = = t = = = = C = = = = = = = = t = = = =
+w w . . . . . . . . . = f h . = . . . . f . . . f f . . . .
+w w . . . A . . f . = . . . = . . . . . . . . h . . f . . .
+w . f . . . . f . = = . . t = . . . . . . . . . . f . A . .
+w w . . h . f . . = . . . . = = . . . . . . . . . . . . . .
+w w . . . . . . = . . . . . . f = = . . . . . f . . . . . .
+w w . . . . . = = . . = . = . = = = C = = = = = t = = = = .
+w w ~ ~ ~ ~ ~ t = = = ~ = ~ = ~ ~ h ~ . . f . h ~ . ~ ~ ~ ~
+w . f . . . f f ~ . ~ . ~ . ~ . . . . . . . . . f . . . . .
+w w . . . . . . . . h . . . . . . . . h f . . . . h f . . .
+w w . . f . . . h . . . . . . . . . . . . h f . . . . . . .
+w w . . . . . . . . . . . . . f . . . . . . . . . f . h . .
+territory side=2 cols=0-21
+territory side=1 cols=22-29
+place at=16,4 name=Arras owner=2 victory
+place at=18,10 name=Amiens owner=2 victory
+place at=7,11 name=Abbeville owner=2 victory
+place at=3,3 name=Boulogne owner=2 victory
+place at=11,4 name=St_Pol owner=2
+place at=13,7 name=Doullens owner=2
+place at=25,4 name=Cambrai owner=1
+place at=24,10 name=Peronne owner=1
+place at=27,7 name=Airfield owner=1
+place at=28,2 name=Airfield owner=1
+place at=5,6 name=Airfield owner=2
+place at=8,1 name=Airfield owner=2
+unit side=1 type=medtank at=26,6 core
+unit side=1 type=medtank at=26,8 core
+unit side=1 type=lighttank at=27,5 core
+unit side=1 type=lighttank at=27,9 core
+unit side=1 type=heavytank at=28,7 core
+unit side=1 type=armcar at=24,7 core
+unit side=1 type=infantry at=25,5 core
+unit side=1 type=infantry at=25,9 core
+unit side=1 type=infantry at=24,3 core
+unit side=1 type=infantry at=24,11 core
+unit side=1 type=pioneers at=26,4 core
+unit side=1 type=pioneers at=26,10 core
+unit side=1 type=fieldart at=28,5 core
+unit side=1 type=fieldart at=28,9 core
+unit side=1 type=heavyart at=29,7 core
+unit side=1 type=atgun at=25,7 core
+unit side=1 type=fighter at=27,7 core
+unit side=1 type=fighter at=28,2 core
+unit side=1 type=divebomb at=25,4 core
+unit side=1 type=divebomb at=24,10 core
+unit side=2 type=heavytank at=15,3
+unit side=2 type=heavytank at=17,5
+unit side=2 type=infantry at=16,4
+unit side=2 type=infantry at=15,5
+unit side=2 type=atgun at=17,3
+unit side=2 type=fieldart at=13,4
+unit side=2 type=infantry at=18,10
+unit side=2 type=infantry at=19,11
+unit side=2 type=infantry at=12,12
+unit side=2 type=atgun at=17,9
+unit side=2 type=fieldart at=15,10
+unit side=2 type=medtank at=10,8
+unit side=2 type=infantry at=7,11
+unit side=2 type=infantry at=3,3
+unit side=2 type=flak at=5,6
+unit side=2 type=infantry at=11,4
+unit side=2 type=cavalry at=20,6
+unit side=2 type=fighter at=5,6
+unit side=2 type=fighter at=8,1
+unit side=2 type=medbomb at=3,3

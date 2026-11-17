@@ -1,0 +1,73 @@
+title Austerlitz (1805)
+description December 1805. The allied army has weakened its centre to strike at
+description your right along the Goldbach. Storm the Pratzen heights, split their
+description army and march on Austerlitz itself. 14 turns.
+era napoleonic
+turns 14
+attacker 1
+first 1
+side 1 name=Grande_Armee color=50,70,160 control=human prestige=250 income=25
+side 2 name=Allied_Army color=40,120,60 control=ai prestige=60 income=10
+map 24 16
+. . . . . . . . ~ . f . . . . . . f . . . . f .
+. . . . . . . . ~ . . . . f . . . . . . . . . .
+= = = h = = = = ~ ~ = t = = = = = = = = = = = =
+. . . . . . . . . ~ . . . . . . . . . . . . . .
+. . . . . . . f . ~ . h . . h h . . . . . . f .
+. . . . . . . . . ~ . h h h h h h . . . . . . .
+. . f . . . . . . ~ . h h h h h . f . . . . f .
+. . . . . . . f ~ . . h h t h = h . . . . . . .
+. . . . . . . . ~ = = = = h = h = = = = f = . .
+= = t = = = = = ~ . . h h h h h h . . . = . t .
+. . . f . . . . t . . . h h h . h . . . . . . .
+. . . . . . . . ~ . . . . . . . . . f . . . f .
+f . . . f . . . t . . . s . . f . . . . . . . .
+f . . . . . . f ~ s s w w w . s . . . . . . . .
+. f f . . . . . ~ s w w w w w w s f . . . . . .
+. . . . . . . . ~ . w w w w w w . . . . . . . .
+territory side=1 cols=0-7
+territory side=2 cols=8-23
+place at=13,7 name=Pratzen owner=2 victory
+place at=15,5 name=Stare_Vinohrady owner=2 victory
+place at=11,2 name=Blasowitz owner=2 victory
+place at=8,12 name=Telnitz owner=2
+place at=8,10 name=Sokolnitz owner=2
+place at=22,9 name=Austerlitz owner=2 victory
+place at=2,9 name=Turas owner=1
+place at=3,2 name=Santon owner=1
+unit side=1 type=line at=6,4 core
+unit side=1 type=line at=6,6 core
+unit side=1 type=line at=7,8 core
+unit side=1 type=line at=7,11 core
+unit side=1 type=line at=6,13 core
+unit side=1 type=light at=5,2 core
+unit side=1 type=light at=7,6 core
+unit side=1 type=grenadier at=4,7 core
+unit side=1 type=guard at=2,8 core
+unit side=1 type=cuirass at=3,4 core
+unit side=1 type=cuirass at=4,5 core
+unit side=1 type=hussars at=5,3 core
+unit side=1 type=hussars at=6,14 core
+unit side=1 type=footart at=4,3 core
+unit side=1 type=footart at=5,8 core
+unit side=1 type=horseart at=3,6 core
+unit side=1 type=dragoons at=5,11 core
+unit side=1 type=line at=5,9 core
+unit side=2 type=line at=9,11
+unit side=2 type=line at=9,12
+unit side=2 type=line at=9,9
+unit side=2 type=line at=10,13
+unit side=2 type=line at=13,6
+unit side=2 type=line at=12,8
+unit side=2 type=line at=14,9
+unit side=2 type=grenadier at=15,6
+unit side=2 type=guard at=18,7
+unit side=2 type=line at=11,3
+unit side=2 type=cossacks at=14,2
+unit side=2 type=cossacks at=9,14
+unit side=2 type=dragoons at=17,3
+unit side=2 type=cuirass at=18,5
+unit side=2 type=footart at=13,4
+unit side=2 type=footart at=10,10
+unit side=2 type=footart at=14,8
+unit side=2 type=line at=20,8

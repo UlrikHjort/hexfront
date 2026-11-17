@@ -1,0 +1,10 @@
+title Blitz in the West (1940)
+era ww2
+description Lead a panzer corps through three battles of the 1940 campaign: the
+description Meuse crossings, the dash to the Channel and the Dunkirk perimeter.
+description Surviving core units keep their experience; prestige carries over.
+player 1
+prestige 0
+stage id=meuse   file=ww2_meuse.scn   win=channel loss=defeat
+stage id=channel file=ww2_channel.scn win=dunkirk loss=defeat
+stage id=dunkirk file=ww2_dunkirk.scn win=victory loss=defeat

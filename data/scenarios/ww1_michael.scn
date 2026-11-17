@@ -1,0 +1,74 @@
+title Operation Michael (1918)
+description March 1918. Reinforced from the east, your armies strike the British
+description line in thick morning fog. New infiltration tactics let assault troops
+description bypass strongpoints: break through and take Ham, Peronne, Bapaume
+description and Albert. 16 turns.
+era ww1
+turns 16
+attacker 1
+first 1
+side 1 name=German_Army color=110,120,130 control=human prestige=250 income=40
+side 2 name=British_Army color=150,120,70 control=ai prestige=40 income=8
+map 26 14
+. . . . . . . . . . . . # . . . . # . s . . . . . .
+. . . . . . f . f . . . # . h f . # . . . . . . . .
+. . A . . . . . . h . . # . . . . # s . . A . . . .
+. . . h . . . . . . . . # . . f . # s s . . . . f f
+h = . = . = = = C = . . # . . . # . s . . h . . h .
+= . = . = . . . . . = = = = . . # . . . . . . . . .
+f . . . . . . . . . . . # = t = = = s = . . . h . f
+f . . . . . . . . . . . = . . . # h = s = = = C . .
+. . . t . = . = . = . = = . h . # . s . f . . f h .
+h . . . = . = ~ = ~ t ~ # . . h # . . . . . . . . .
+. ~ . ~ ~ ~ ~ f . h . . ~ ~ . . # # . . . . . . . .
+~ . ~ . . . . . . . h . # f t ~ ~ ~ s ~ h ~ . . . .
+. . . . . . . . . . . . # . . . . # ~ . ~ h ~ ~ ~ ~
+. . . f . . . . . . . . # . . . . # . s h . . f . h
+territory side=2 cols=0-19
+territory side=1 cols=20-25
+place at=23,7 name=St_Quentin owner=1
+place at=21,2 name=Airfield owner=1
+place at=14,11 name=Ham owner=2 victory
+place at=10,9 name=Peronne owner=2 victory
+place at=8,4 name=Bapaume owner=2 victory
+place at=3,8 name=Albert owner=2 victory
+place at=14,6 name=Epehy owner=2
+place at=2,2 name=Airfield owner=2
+unit side=1 type=storm at=20,2 core
+unit side=1 type=storm at=20,5 core
+unit side=1 type=storm at=20,8 core
+unit side=1 type=storm at=20,11 core
+unit side=1 type=infantry at=21,3 core
+unit side=1 type=infantry at=21,6 core
+unit side=1 type=infantry at=21,9 core
+unit side=1 type=infantry at=21,12 core
+unit side=1 type=infantry at=22,5 core
+unit side=1 type=infantry at=22,9 core
+unit side=1 type=mg at=22,3 core
+unit side=1 type=mg at=22,11 core
+unit side=1 type=fieldgun at=23,4 core
+unit side=1 type=fieldgun at=23,9 core
+unit side=1 type=fieldgun at=24,6 core
+unit side=1 type=howitzer at=25,4 core
+unit side=1 type=howitzer at=25,9 core
+unit side=1 type=cavalry at=24,12 core
+unit side=1 type=scout at=21,2 core
+unit side=1 type=biplane at=23,7 core
+unit side=2 type=infantry at=17,1 entrench=3
+unit side=2 type=mg at=16,4 entrench=3
+unit side=2 type=infantry at=16,7 entrench=3
+unit side=2 type=mg at=16,10 entrench=3
+unit side=2 type=infantry at=17,12 entrench=3
+unit side=2 type=infantry at=12,2 entrench=3
+unit side=2 type=mg at=12,6 entrench=3
+unit side=2 type=infantry at=12,10 entrench=3
+unit side=2 type=infantry at=14,6 entrench=3
+unit side=2 type=fieldgun at=14,3
+unit side=2 type=fieldgun at=14,9
+unit side=2 type=howitzer at=9,6
+unit side=2 type=tank at=7,8
+unit side=2 type=tank at=9,3
+unit side=2 type=cavalry at=5,6
+unit side=2 type=aagun at=10,5
+unit side=2 type=infantry at=3,8
+unit side=2 type=scout at=2,2

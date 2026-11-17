@@ -1,0 +1,125 @@
+title Boot Camp: Learning the Ropes
+category Tutorial
+description A small training battle. Pop-up hints explain the basics of hex
+description wargaming as you play: moving, scouting, attacking, artillery,
+description supply, prestige and air power. Take Millbrook and Eastwick.
+era ww2
+turns 14
+attacker 1
+first 1
+side 1 name=Blue_Force color=60,100,180 control=human prestige=150 income=20
+side 2 name=Red_Force color=170,60,50 control=ai prestige=0 income=0
+buy side=1 types=infantry,medtank,fieldart,armcar,atgun
+buy side=2 types=none
+hint turn=1 Welcome to Hexfront boot camp!
+more
+more The map is made of hexes. Each counter is a unit; the number on it is its
+more strength (10 = full). Blue counters are yours, red ones are the enemy.
+more
+more Your mission: capture the two villages with gold rings - Millbrook and
+more Eastwick - within 14 turns. Gold-ringed hexes are OBJECTIVES.
+more
+more Notice the grey haze: that is the FOG OF WAR. You only see what your units
+more can see. Start by clicking your ARMOURED CAR (the counter with a slash
+more and a small circle, at the front) to select it.
+hint event=select A unit is selected (yellow outline).
+more
+more The darkened hexes are out of reach this turn. Moving costs points per hex:
+more roads are cheap, forest, hills and rivers are expensive. The side panel
+more shows the unit's movement points, attack and defence values.
+more
+more Move the armoured car forward along the road by clicking a lit hex.
+more Recon units see further (3 hexes) and may split their move.
+hint event=move Good. Look how the fog lifts around your unit as it moves.
+more
+more Rules of movement:
+more  - A unit normally moves once per turn (recon may continue).
+more  - Entering a hex next to an enemy stops you: its ZONE OF CONTROL.
+more  - You cannot move through enemy units.
+more
+more Now move the rest of your force up, keeping infantry and tanks together.
+more Leave the artillery where it is for now. Press 'End turn' when done.
+hint event=contact Contact! A unit stopped because it bumped into an enemy zone of control.
+more Scouting with cheap recon units first avoids nasty surprises.
+hint event=ambush AMBUSH! An enemy unit was hidden in the fog and blocked your path.
+more Your unit stopped short and lost the rest of its move. Scout ahead!
+hint turn=2 ATTACKING
+more
+more Select a unit: enemies it can attack get a RED outline. Hover the mouse
+more over one to see the EXPECTED LOSSES on both sides before you commit.
+more
+more Combat tips:
+more  - Defenders in towns, forests and hills are much harder to hurt.
+more  - Units that sit still DIG IN (brown ticks on the counter).
+more    Every attack knocks one level of entrenchment off.
+more  - Tanks hate close terrain (towns, forest); infantry loves it.
+more  - Use ARTILLERY first: it fires from range 2-3 without return fire,
+more    kills and SUPPRESSES the target. But guns cannot fire after moving!
+more  - Then assault with infantry and tanks from several sides.
+hint event=attack The defender fires back at close range, so both sides take losses.
+more Check the combat log at the bottom right for details.
+hint event=kill Enemy unit destroyed! Destroying units and capturing towns earns PRESTIGE.
+hint event=loss You lost a unit. Weak units should pull back to reinforce rather than attack.
+hint turn=3 SUPPLY AND ENTRENCHMENT
+more
+more Units use ammunition when they fight, and vehicles burn fuel. A small
+more orange dot on a counter means it is running low.
+more
+more A unit that has not moved or fought this turn can press RESUPPLY
+more (only half if an enemy is adjacent). It can also press REINFORCE to
+more replace losses, paid for with prestige.
+hint turn=4 AIR POWER
+more
+more You have a DIVE BOMBER at Alpha Field. Aircraft fly over everything
+more and ignore zones of control. A bomber attacks the hex below it or next
+more to it, and the target is suppressed too.
+more
+more But aircraft burn fuel every turn they spend away from an airfield or
+more friendly town. If the tank runs dry they crash! Land, then Resupply.
+more Beware enemy flak and fighters, which shoot back.
+hint turn=5 PRESTIGE
+more
+more Prestige is your currency. Spend it on 'Buy unit': new units appear in
+more your own towns or airfields and can act from next turn. In a campaign,
+more surviving units and prestige carry over to the next battle.
+hint event=capture Captured! Owning a town gives you a flag on it and some prestige.
+more Objectives (gold rings) decide the battle: take them all to win.
+hint event=buy New unit deployed. It can move from your next turn.
+hint turn=7 GENERAL ADVICE
+more
+more  - Concentrate: three units attacking one enemy beat three duels.
+more  - Protect the flanks of your artillery; it is weak in close combat.
+more  - Keep a reserve, and pull battered units back to refit.
+more  - Watch the turn counter: an attack that is too slow fails too.
+hint turn=11 Only a few turns left! Push for the objectives now.
+map 16 10
+. . . . . . . ~ . . . . . . . .
+. . . . . f f ~ . . . . h h . .
+. . . . . f f ~ . . . . . . . .
+. . . . . f . ~ . . . . . . . .
+. . . . . = . = . t . . . . . .
+= t = = = . = ~ = . = = . . . .
+. . . . . . ~ . h . f f = t . =
+. . . . . . ~ . h h f f . . = .
+. A . s s . ~ . . . . . . . . .
+. . . . . . ~ . . . . . . . . .
+territory side=1 cols=0-4
+territory side=2 cols=5-15
+place at=1,5 name=Camp_Alpha owner=1
+place at=1,8 name=Alpha_Field owner=1
+place at=9,4 name=Millbrook owner=2 victory
+place at=13,6 name=Eastwick owner=2 victory
+unit side=1 type=armcar at=4,4
+unit side=1 type=infantry at=3,5
+unit side=1 type=infantry at=2,4
+unit side=1 type=infantry at=3,3
+unit side=1 type=medtank at=3,6
+unit side=1 type=fieldart at=1,4
+unit side=1 type=pioneers at=2,6
+unit side=1 type=divebomb at=1,8
+unit side=2 type=infantry at=9,4 entrench=2
+unit side=2 type=atgun at=10,6
+unit side=2 type=infantry at=12,3
+unit side=2 type=fieldart at=14,4
+unit side=2 type=armcar at=8,1
+unit side=2 type=infantry at=13,6 entrench=1

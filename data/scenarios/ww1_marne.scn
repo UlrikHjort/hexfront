@@ -1,0 +1,75 @@
+title Drive on the Marne (1918)
+description May 1918. A crushing bombardment opens the assault on the Chemin des
+description Dames ridge. Storm the heights, cross the Aisne and the Vesle and
+description reach the Marne at Chateau-Thierry. Take Soissons and Fismes on the
+description way. 18 turns.
+era ww1
+turns 18
+attacker 1
+first 1
+side 1 name=German_Army color=110,120,130 control=human prestige=150 income=40
+side 2 name=Allied_Army color=165,135,75 control=ai prestige=40 income=10
+map 24 16
+. . f . . . . . f . f . C . . . . . f . . . . .
+. . . . . . . . . f . = = . . . . . A . f . . .
+. . f . . . . . f . . = . . . . . . . . . . . .
+. . . . . . . . . . . = . . . . f . f . . . . .
+f h h h h h h h h h h = h h h h h h h f h f h h
+# # # # # # # # # # = # # # # # # # # # # # # #
+. . . f f . f . . = = = . . f . . . . . . . . .
+f ~ . ~ . ~ ~ ~ ~ ~ ~ ~ . ~ . ~ f ~ . ~ . ~ . ~
+~ . ~ . C = . . . . . . ~ = ~ . ~ . ~ . ~ . ~ .
+. . . . . = . . . . . . . = . . . . . . . f . .
+. ~ . ~ . ~ = ~ ~ ~ ~ ~ ~ ~ t ~ = ~ . ~ . . . .
+~ f ~ . ~ . ~ = . . f . . . . . ~ . ~ . C ~ ~ ~
+. . t . f . f f t . . . . . . f . . . . . . . f
+. . . . . . . . f f f ~ . ~ . ~ . ~ . ~ . ~ f ~
+~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ . ~ . ~ . ~ . ~ . ~ . ~ .
+. . . . . f . . . f . . . . . . A . . . . . f .
+territory side=2 cols=0-23
+place at=12,0 name=Laon owner=1
+place at=18,1 name=Airfield owner=1
+place at=4,8 name=Soissons owner=2 victory
+place at=14,10 name=Fismes owner=2 victory
+place at=8,12 name=Chateau-Thierry owner=2 victory
+place at=20,11 name=Reims owner=2
+place at=2,12 name=Villers owner=2
+place at=16,15 name=Airfield owner=2
+unit side=1 type=storm at=3,2 core
+unit side=1 type=storm at=6,2 core
+unit side=1 type=storm at=9,2 core
+unit side=1 type=storm at=12,2 core
+unit side=1 type=infantry at=15,2 core
+unit side=1 type=infantry at=18,2 core
+unit side=1 type=infantry at=4,1 core
+unit side=1 type=infantry at=8,1 core
+unit side=1 type=infantry at=13,1 core
+unit side=1 type=infantry at=17,1 core
+unit side=1 type=mg at=20,2 core
+unit side=1 type=mg at=21,1 core
+unit side=1 type=fieldgun at=2,1 core
+unit side=1 type=fieldgun at=10,0 core
+unit side=1 type=fieldgun at=14,0 core
+unit side=1 type=howitzer at=6,0 core
+unit side=1 type=howitzer at=16,0 core
+unit side=1 type=cavalry at=22,2 core
+unit side=1 type=scout at=18,1 core
+unit side=1 type=biplane at=12,0 core
+unit side=2 type=infantry at=3,5 entrench=2
+unit side=2 type=mg at=7,5 entrench=2
+unit side=2 type=infantry at=11,5 entrench=2
+unit side=2 type=mg at=15,5 entrench=2
+unit side=2 type=infantry at=19,5 entrench=2
+unit side=2 type=infantry at=22,5 entrench=2
+unit side=2 type=fieldgun at=9,6
+unit side=2 type=fieldgun at=17,6
+unit side=2 type=infantry at=4,8
+unit side=2 type=infantry at=14,10
+unit side=2 type=infantry at=8,12
+unit side=2 type=mg at=9,12
+unit side=2 type=tank at=12,12
+unit side=2 type=cavalry at=6,11
+unit side=2 type=howitzer at=16,12
+unit side=2 type=infantry at=20,11
+unit side=2 type=aagun at=13,9
+unit side=2 type=scout at=16,15

@@ -1,0 +1,16 @@
+# Napoleonic era definition. No vehicles; cavalry shock against
+# troops in the open, infantry forms square against horsemen.
+era name=Napoleonic_Wars
+rule max_entrench=2 charge_bonus=5 square_bonus=5 close_armor_penalty=0
+
+unit id=line      name=Line_Infantry   class=infantry  move=foot  target=soft mp=3 soft=6 hard=0 def=6 ammo=8 cost=120
+unit id=light     name=Light_Infantry  class=infantry  move=foot  target=soft mp=4 soft=5 hard=0 def=6 ammo=8 cost=130
+unit id=guard     name=Guard_Infantry  class=infantry  move=foot  target=soft mp=3 soft=9 hard=0 def=9 ammo=8 cost=260
+unit id=grenadier name=Grenadiers      class=infantry  move=foot  target=soft mp=3 soft=8 hard=0 def=7 ammo=8 cost=180
+unit id=sappers   name=Sappers         class=engineer  move=foot  target=soft mp=3 soft=5 hard=0 def=5 ammo=6 cost=130 flags=sapper
+unit id=hussars   name=Light_Cavalry   class=recon     move=horse target=soft mp=6 soft=5 hard=0 def=4 ammo=6 cost=150 flags=charge
+unit id=cossacks  name=Cossacks        class=recon     move=horse target=soft mp=7 soft=4 hard=0 def=3 ammo=6 cost=110 flags=charge
+unit id=dragoons  name=Dragoons        class=cavalry   move=horse target=soft mp=5 soft=7 hard=0 def=5 ammo=6 cost=190 flags=charge
+unit id=cuirass   name=Heavy_Cavalry   class=cavalry   move=horse target=soft mp=5 soft=9 hard=0 def=6 ammo=6 cost=250 flags=charge
+unit id=footart   name=Foot_Artillery  class=artillery move=foot  target=soft mp=2 range=2 soft=9 hard=0 def=2 ammo=7 cost=200 flags=support,bombard
+unit id=horseart  name=Horse_Artillery class=artillery move=horse target=soft mp=4 range=2 soft=7 hard=0 def=2 ammo=6 cost=220 flags=support,bombard

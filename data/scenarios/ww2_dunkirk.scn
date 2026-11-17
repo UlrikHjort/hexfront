@@ -1,0 +1,74 @@
+title The Dunkirk Perimeter (1940)
+description The allied armies are trapped against the sea and are evacuating.
+description Break the canal line and take Dunkirk, Bergues, Furnes and Nieuport
+description before they slip away. The polders are boggy and the defenders
+description are dug in. 14 turns.
+era ww2
+turns 14
+attacker 1
+first 1
+side 1 name=Wehrmacht color=96,104,88 control=human prestige=150 income=30
+side 2 name=Allied_Forces color=150,110,60 control=ai prestige=80 income=15
+map 24 14
+w w w w w w w w w w w w w w w w w w w w w w w w
+. w w . w w . w w . w w . w w . w w . w w . w w
+. s s . . C . = . . . . . . s s . s . = s t s .
+. s . A s = = . = = = = = t = = = = = . = . . .
+s s . . . . = . . . s s s = . . s . s . . ~ . ~
+. . s . . . t . . . t . . . = ~ . ~ ~ ~ ~ s ~ s
+. s s . s . = = s ~ . ~ ~ ~ ~ = ~ s . . . . . s
+h ~ . ~ . ~ ~ ~ ~ f ~ h f . . = . . . f . . . .
+~ . ~ f ~ . . . = . h h . . . . = f . . f . f .
+. . . . . . . . = = . h . . . . = . . f . . . .
+h . . . . . . . . = . . h h . . = = f . . . f .
+. . . . f . . . . t f . . . . . . t . . . . . .
+. . . . f . f . . . = f A . f . f . = h . . . .
+. . . . . . . h . . = . . h . . f . = . . f . h
+territory side=2 cols=0-23
+place at=5,2 name=Dunkirk owner=2 victory
+place at=6,5 name=Bergues owner=2 victory
+place at=13,3 name=Furnes owner=2 victory
+place at=10,5 name=Hondschoote owner=2
+place at=21,2 name=Nieuport owner=2 victory
+place at=9,11 name=Cassel owner=1
+place at=17,11 name=Ypres owner=1
+place at=12,12 name=Airfield owner=1
+place at=3,3 name=Airfield owner=2
+unit side=1 type=medtank at=8,10 core
+unit side=1 type=medtank at=14,10 core
+unit side=1 type=lighttank at=11,11 core
+unit side=1 type=lighttank at=16,10 core
+unit side=1 type=heavytank at=12,10 core
+unit side=1 type=armcar at=6,10 core
+unit side=1 type=infantry at=4,10 core
+unit side=1 type=infantry at=10,9 core
+unit side=1 type=infantry at=15,9 core
+unit side=1 type=infantry at=19,8 core
+unit side=1 type=pioneers at=7,9 core
+unit side=1 type=pioneers at=13,9 core
+unit side=1 type=fieldart at=9,12 core
+unit side=1 type=fieldart at=14,12 core
+unit side=1 type=heavyart at=11,13 core
+unit side=1 type=atgun at=17,10 core
+unit side=1 type=fighter at=12,12 core
+unit side=1 type=fighter at=9,11 core
+unit side=1 type=divebomb at=17,11 core
+unit side=1 type=divebomb at=20,12 core
+unit side=2 type=infantry at=3,7 entrench=2
+unit side=2 type=infantry at=6,6 entrench=2
+unit side=2 type=infantry at=8,6 entrench=2
+unit side=2 type=infantry at=11,5 entrench=2
+unit side=2 type=infantry at=14,5 entrench=2
+unit side=2 type=infantry at=17,4 entrench=2
+unit side=2 type=infantry at=20,3 entrench=2
+unit side=2 type=atgun at=9,5 entrench=2
+unit side=2 type=atgun at=16,5 entrench=2
+unit side=2 type=fieldart at=6,4
+unit side=2 type=fieldart at=12,3
+unit side=2 type=heavyart at=5,3
+unit side=2 type=flak at=9,4
+unit side=2 type=medtank at=8,3
+unit side=2 type=infantry at=5,2
+unit side=2 type=infantry at=21,2
+unit side=2 type=fighter at=3,3
+unit side=2 type=fighter at=5,2

@@ -1,0 +1,17 @@
+# Great War era definition. Deep entrenchment, slow tanks,
+# cavalry still hoping for the breakthrough.
+era name=The_Great_War
+rule max_entrench=4 charge_bonus=2 square_bonus=0 close_armor_penalty=4
+
+unit id=infantry  name=Infantry            class=infantry  move=foot    target=soft mp=3 soft=6  hard=1 air=1 def=5 ammo=8  cost=100
+unit id=mg        name=Machine-gun_Company class=infantry  move=foot    target=soft mp=2 soft=9  hard=1 air=2 def=5 ammo=10 cost=150
+unit id=storm     name=Assault_Troops      class=engineer  move=foot    target=soft mp=3 soft=9  hard=2 def=6 ammo=6  cost=180 flags=sapper
+unit id=cavalry   name=Cavalry             class=cavalry   move=horse   target=soft mp=5 soft=5  hard=0 def=3 ammo=5  cost=130 flags=charge
+unit id=armcar    name=Armoured_Car        class=recon     move=wheeled target=hard mp=5 soft=4  hard=1 def=4 ammo=6  fuel=30 cost=140
+unit id=tank      name=Landship            class=armor     move=tracked target=hard mp=2 soft=7  hard=3 def=8 ammo=6  fuel=14 cost=280 flags=sapper
+unit id=fieldgun  name=Field_Gun           class=artillery move=horse   target=soft mp=2 range=3 soft=9  hard=3 def=2 ammo=6 cost=200 flags=support,bombard
+unit id=howitzer  name=Heavy_Howitzer      class=artillery move=horse   target=soft mp=1 range=4 soft=12 hard=5 def=2 ammo=5 cost=280 flags=bombard
+unit id=redoubt   name=Redoubt             class=fortification move=static target=hard mp=0 soft=8 hard=2 def=10 ammo=12 cost=250
+unit id=aagun     name=Anti-aircraft_Gun   class=anti_air  move=horse   target=soft mp=2 range=2 soft=2 hard=1 air=6 def=3 ammo=6 cost=150 flags=support
+unit id=scout     name=Scout_Plane         class=fighter   move=air     target=air  mp=6 soft=2 hard=0 air=6 def=4 ammo=5 fuel=24 cost=200 spot=4
+unit id=biplane   name=Biplane_Bomber      class=bomber    move=air     target=air  mp=5 soft=6 hard=3 air=1 def=3 ammo=3 fuel=24 cost=240

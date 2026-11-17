@@ -1,0 +1,74 @@
+title Ulm: The Encirclement (1805)
+description Autumn 1805. While the Austrian army waits at Ulm for an attack from
+description the west, your corps have swung around its flank to the north and
+description east. Close the ring: take Elchingen, Gunzburg and Memmingen and
+description force the fortress of Ulm before the Russians arrive. 14 turns.
+era napoleonic
+turns 14
+attacker 1
+first 1
+side 1 name=Grande_Armee color=50,70,160 control=human prestige=200 income=20
+side 2 name=Austrian_Army color=225,225,215 control=ai prestige=150 income=20
+map 26 16
+. h . . . . . h . . h . . h . h h h f . . . . . . =
+= = . . . h . . h h h . . . . h f h . . . t = = = .
+. . = = t = h . . . . . . . . . f . f . = . h . h .
+. . f h h . = = . . . h . h . . h . f = = h . . h .
+. . . . f h . . = = h . h . . . h . = . . . f . . .
+. f . . f . . h f . = . h . . . h t = . f . . . h .
+. . . . . . . . . . = = . . . . . f . . . . . . . .
+. . . . . . f f . ~ . ~ = F . ~ . ~ . ~ f ~ . ~ . ~
+. ~ . ~ . t ~ ~ ~ . ~ . ~ = ~ = ~ = ~ . ~ . ~ . ~ .
+~ . ~ . ~ . f . . . . . ~ . . . = . = = . = . . . .
+. . f . . . . f . . . = ~ . . . . . . . = . = = t =
+. . f . f . . . . . . = ~ . . . . . . . . . . f . .
+. . . . . . f . . . . = ~ . s . . . . . . f f . . .
+. . . . . . . . . . = . ~ . . . . s f . . . . . . .
+. . . . . . . . . . t . ~ . . s . s . . . . . . . .
+. . . . f . . . . . . . ~ . . . f . . f . . . . . .
+territory side=2 cols=0-25
+territory side=1 cols=0-0
+place at=13,7 name=Ulm owner=2 victory
+place at=17,5 name=Elchingen owner=2 victory
+place at=5,8 name=Gunzburg owner=2 victory
+place at=10,14 name=Memmingen owner=2 victory
+place at=21,1 name=Nordlingen owner=1
+place at=4,2 name=Aalen owner=1
+place at=24,10 name=Augsburg owner=1
+unit side=1 type=line at=5,3 core
+unit side=1 type=line at=8,3 core
+unit side=1 type=line at=11,2 core
+unit side=1 type=line at=14,2 core
+unit side=1 type=line at=18,2 core
+unit side=1 type=line at=22,4 core
+unit side=1 type=light at=9,1 core
+unit side=1 type=light at=23,7 core
+unit side=1 type=grenadier at=16,1 core
+unit side=1 type=cuirass at=12,1 core
+unit side=1 type=cuirass at=20,2 core
+unit side=1 type=hussars at=3,4 core
+unit side=1 type=hussars at=24,9 core
+unit side=1 type=dragoons at=22,2 core
+unit side=1 type=footart at=13,2 core
+unit side=1 type=footart at=17,2 core
+unit side=1 type=horseart at=21,3 core
+unit side=1 type=line at=6,1 core
+unit side=2 type=line at=13,7
+unit side=2 type=line at=12,6
+unit side=2 type=line at=14,6
+unit side=2 type=grenadier at=13,8
+unit side=2 type=line at=17,5
+unit side=2 type=line at=16,6
+unit side=2 type=line at=5,8
+unit side=2 type=line at=6,9
+unit side=2 type=line at=10,14
+unit side=2 type=line at=9,12
+unit side=2 type=footart at=12,7
+unit side=2 type=footart at=15,7
+unit side=2 type=footart at=5,9
+unit side=2 type=hussars at=8,6
+unit side=2 type=dragoons at=11,9
+unit side=2 type=cuirass at=14,9
+unit side=2 type=line at=18,6
+unit side=2 type=grenadier at=6,8
+unit side=2 type=line at=11,13

@@ -1,0 +1,9 @@
+title Kaiserschlacht (1918)
+era ww1
+description The last gamble of the Great War. Lead the German spring offensives:
+description smash through the British line in Operation Michael, then storm the
+description Chemin des Dames and drive for the Marne.
+player 1
+prestige 0
+stage id=michael file=ww1_michael.scn win=marne   loss=defeat
+stage id=marne   file=ww1_marne.scn   win=victory loss=defeat

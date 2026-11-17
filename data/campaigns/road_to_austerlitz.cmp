@@ -1,0 +1,9 @@
+title The Road to Austerlitz (1805)
+era napoleonic
+description Lead the Grande Armee from the Rhine to Moravia: first trap the
+description Austrian army at Ulm, then face the Austro-Russian host at Austerlitz.
+description Your veterans carry their experience from one battle to the next.
+player 1
+prestige 0
+stage id=ulm        file=nap_ulm.scn        win=austerlitz loss=austerlitz
+stage id=austerlitz file=nap_austerlitz.scn win=victory    loss=defeat
