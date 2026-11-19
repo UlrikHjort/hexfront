@@ -2,6 +2,7 @@ with Ada.Text_IO;              use Ada.Text_IO;
 with Ada.Directories;          use Ada.Directories;
 with Ada.Strings.Unbounded;    use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed;
+with Ada.Characters.Handling;  use Ada.Characters.Handling;
 with Engine.Game;              use Engine.Game;
 with Engine.Loader;
 with Engine.Text_Util;         use Engine.Text_Util;
@@ -192,6 +193,20 @@ package body Engine.Editing is
       Put_Line (F, "attacker" & G.Attacker'Image);
       Put_Line (F, "first" & G.First'Image);
       Put_Line (F, "fog " & (if G.Fog then "on" else "off"));
+      if G.Climate /= Always_Fair then
+         Put_Line (F, "climate " & Climate_Name (G.Climate));
+      end if;
+      for W of G.Weather_Plan loop
+         Put_Line (F, "weather turn=" & Image (W.Turn) & " "
+                   & (if W.Kind = Mist then "fog"
+                      else To_Lower (Weather_Name (W.Kind))));
+      end loop;
+      for S in Player_Side loop
+         if G.Supply_Edge (S) /= Auto then
+            Put_Line (F, "supply side=" & Image (Integer (S))
+                      & " edge=" & Edge_Name (G.Supply_Edge (S)));
+         end if;
+      end loop;
       for S in Player_Side loop
          declare
             I : constant Side_Info := G.Sides (S);

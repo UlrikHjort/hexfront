@@ -607,6 +607,14 @@ package body Engine.AI is
                return V - (if Distance (H, Goal) < 2 then 8.0 else 0.0);
             end if;
             V := V + 0.7 * Float (Defense_Bonus (Terrain_At (H)));
+            --  Stay within reach of the supply lines.
+            if T.Mover not in Static | Naval then
+               case Supply_At (H, Side) is
+                  when Supplied   => null;
+                  when Low_Supply => V := V - 1.0;
+                  when Cut_Off    => V := V - 10.0;
+               end case;
+            end if;
             if Weak then
                V := V - 6.0 * Float (Enemies_Adjacent (H, Side));
             end if;

@@ -35,6 +35,7 @@ package body Editor is
    Tools     : Gtk_Window;
 
    Mode_C, Terrain_C, Side_C, Type_C, Owner_C, Attacker_C : Gtk_Combo_Box_Text;
+   Climate_C, Edge1_C, Edge2_C : Gtk_Combo_Box_Text;
    Name_E, Title_E, Desc_E, Side1_E, Side2_E : Gtk_Entry;
    Turns_S, Pres1_S, Pres2_S : Gtk_Spin_Button;
    Victory_B, Core_B, Fog_B : Gtk_Check_Button;
@@ -107,6 +108,9 @@ package body Editor is
       Pres1_S.Set_Value (Gdouble (G.Sides (1).Prestige));
       Pres2_S.Set_Value (Gdouble (G.Sides (2).Prestige));
       Fog_B.Set_Active (G.Fog);
+      Climate_C.Set_Active (Gint (Climate_Kind'Pos (G.Climate)));
+      Edge1_C.Set_Active (Gint (Edge_Kind'Pos (G.Supply_Edge (1))));
+      Edge2_C.Set_Active (Gint (Edge_Kind'Pos (G.Supply_Edge (2))));
       Side_C.Remove_All;
       Side_C.Append_Text (To_String (G.Sides (1).Name));
       Side_C.Append_Text (To_String (G.Sides (2).Name));
@@ -131,6 +135,12 @@ package body Editor is
       G.Sides (1).Prestige := Integer (Pres1_S.Get_Value_As_Int);
       G.Sides (2).Prestige := Integer (Pres2_S.Get_Value_As_Int);
       G.Fog := Fog_B.Get_Active;
+      G.Climate := Climate_Kind'Val
+        (Integer'Max (0, Integer (Climate_C.Get_Active)));
+      G.Supply_Edge (1) := Edge_Kind'Val
+        (Integer'Max (0, Integer (Edge1_C.Get_Active)));
+      G.Supply_Edge (2) := Edge_Kind'Val
+        (Integer'Max (0, Integer (Edge2_C.Get_Active)));
       G.Winner := 0;
       G.Turn := 1;
       G.Current := G.First;
@@ -504,6 +514,25 @@ package body Editor is
       Attacker_C.Append_Text ("Side 1");
       Attacker_C.Append_Text ("Side 2");
       Labelled ("Attacker", Attacker_C);
+      Gtk_New (Climate_C);
+      for C in Climate_Kind loop
+         Climate_C.Append_Text (Climate_Name (C));
+      end loop;
+      Climate_C.Set_Tooltip_Text
+        ("Weather is rolled every turn from the climate");
+      Labelled ("Climate", Climate_C);
+      Gtk_New (Edge1_C);
+      Gtk_New (Edge2_C);
+      for E in Edge_Kind loop
+         Edge1_C.Append_Text (Edge_Name (E));
+         Edge2_C.Append_Text (Edge_Name (E));
+      end loop;
+      Edge1_C.Set_Tooltip_Text
+        ("Map edge side 1 draws supply from (auto = behind its units)");
+      Edge2_C.Set_Tooltip_Text
+        ("Map edge side 2 draws supply from (auto = behind its units)");
+      Labelled ("Supply edge 1", Edge1_C);
+      Labelled ("Supply edge 2", Edge2_C);
       Gtk_New (Fog_B, "Fog of war");
       Inner.Pack_Start (Fog_B, False, False, 0);
       Box.Pack_Start (Frame, False, False, 0);

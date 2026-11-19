@@ -47,7 +47,8 @@ package body Anim is
                      when Horse   => "move_horse",
                      when Wheeled => "move_wheels",
                      when Tracked => "move_tracks",
-                     when Air     => "move_air");
+                     when Air     => "move_air",
+                     when Naval   => "move_ship");
             end if;
          when Fx_Combat =>
             if E.Air_Attack then
@@ -58,6 +59,8 @@ package body Anim is
                   when Artillery =>
                      Sound.Play (if Era_Is ("napoleonic") then "fire_cannon"
                                  else "fire_artillery");
+                  when Warship =>
+                     Sound.Play ("fire_naval");
                   when Armor | Anti_Tank | Anti_Air | Fortification =>
                      Sound.Play ("fire_gun");
                   when others =>

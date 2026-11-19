@@ -1,0 +1,94 @@
+title Waterloo (1815)
+description 18 June 1815. Rain has soaked the fields all night and the guns sink in
+description the mud. Wellington's army holds the ridge of Mont-Saint-Jean with the
+description farms of Hougoumont, La Haye Sainte and Papelotte as bastions. Break
+description his line before the Prussians arrive on your right flank from the
+description east. 12 turns.
+era napoleonic
+turns 12
+attacker 1
+first 1
+climate temperate
+weather turn=1 rain
+weather turn=2 rain
+weather turn=3 overcast
+weather turn=4 fair
+supply side=1 edge=south
+supply side=2 edge=north
+side 1 name=Armee_du_Nord color=50,70,160 control=human prestige=200 income=20
+side 2 name=Allied_Army color=190,50,50 control=ai prestige=60 income=10
+hint turn=5 Dark columns are emerging from the Bois de Paris - the Prussians!
+more Guard your right flank and your line of supply through Plancenoit.
+map 24 14
+. . . . . . = . . . . . t . . . . . . . . . . .
+. . . . . . = . . f f . = . . . . . . . . . . .
+. . . . . . = . . . . . = . . . . . . . . . . ~
+. f f . . . = . . . . . t = . . . . . . . f . ~
+f . h h h h = h . . h h = h = = . h h . f f ~ .
+. . . . . f = . . . . . = . . . = = f f f ~ ~ f
+. . . . f f = f . . . . t . . . . . t = f ~ f f
+. . . . f f t f . . . . = . . . . . . . = ~ f f
+. . . . f f = = . . . . = . . . . . . f . ~ = =
+. f . f . . . = . . . . = . . . . f f . . ~ f .
+. . . . . h h = h . h h t h h . h h h . . f ~ .
+. . . . . f . = . . . . = . f . . . f t f f ~ .
+. . . . . . . . = . . . = . . . . . . . . . ~ .
+. . . . . . . . t . . . = . . . . . . . . . ~ f
+territory side=2 cols=0-23
+place at=6,7 name=Hougoumont owner=2 victory
+place at=12,6 name=La_Haye_Sainte owner=2 victory
+place at=18,6 name=Papelotte owner=2 victory
+place at=12,3 name=Mont-St-Jean owner=2 victory
+place at=12,0 name=Waterloo owner=2
+place at=12,10 name=La_Belle_Alliance owner=1
+place at=19,11 name=Plancenoit owner=1
+place at=8,13 name=Genappe owner=1
+reinforce turn=5 side=2 type=line at=23,9
+reinforce turn=5 side=2 type=hussars at=23,7
+reinforce turn=6 side=2 type=line at=23,10
+reinforce turn=6 side=2 type=footart at=23,8
+reinforce turn=7 side=2 type=line at=23,11
+reinforce turn=7 side=2 type=dragoons at=22,12
+reinforce turn=7 side=2 type=line at=23,6
+reinforce turn=8 side=2 type=line at=23,12
+reinforce turn=8 side=2 type=grenadier at=23,10
+unit side=1 type=line at=5,9
+unit side=1 type=line at=7,9
+unit side=1 type=line at=9,9
+unit side=1 type=line at=11,9
+unit side=1 type=line at=14,9
+unit side=1 type=line at=16,9
+unit side=1 type=line at=18,9
+unit side=1 type=light at=4,8
+unit side=1 type=grenadier at=10,11
+unit side=1 type=guard at=12,11
+unit side=1 type=guard at=13,12
+unit side=1 type=cuirass at=9,11
+unit side=1 type=cuirass at=14,11
+unit side=1 type=dragoons at=16,11
+unit side=1 type=hussars at=3,10
+unit side=1 type=hussars at=19,9
+unit side=1 type=footart at=10,10
+unit side=1 type=footart at=13,10
+unit side=1 type=footart at=15,10
+unit side=1 type=horseart at=8,10
+unit side=1 type=sappers at=6,10
+unit side=2 type=line at=6,7 entrench=1
+unit side=2 type=grenadier at=12,6 entrench=1
+unit side=2 type=light at=18,6 entrench=1
+unit side=2 type=line at=4,4 entrench=1
+unit side=2 type=line at=8,4 entrench=1
+unit side=2 type=line at=10,4 entrench=1
+unit side=2 type=line at=14,4 entrench=1
+unit side=2 type=line at=16,4 entrench=1
+unit side=2 type=guard at=7,3 entrench=1
+unit side=2 type=line at=12,4
+unit side=2 type=grenadier at=9,2
+unit side=2 type=light at=11,5
+unit side=2 type=footart at=9,3
+unit side=2 type=footart at=13,3
+unit side=2 type=horseart at=17,3
+unit side=2 type=cuirass at=11,2
+unit side=2 type=dragoons at=14,2
+unit side=2 type=hussars at=19,4
+unit side=2 type=line at=12,3

@@ -6,7 +6,8 @@ package Engine.Loader is
 
    Load_Error : exception;
 
-   --  Directory holding "eras/" and "scenarios/".
+   --  Directory holding "eras/" and "scenarios/": $HEXFRONT_DATA, ./data,
+   --  data/ next to or above the program, or <prefix>/share/hexfront.
    function Data_Dir return String;
 
    --  Loads a scenario. With Start => False the game is set up but not

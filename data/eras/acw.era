@@ -1,0 +1,14 @@
+# American Civil War era definition. Rifled muskets make frontal charges
+# costly; field works and artillery dominate the defence.
+era name=American_Civil_War
+rule max_entrench=3 charge_bonus=2 square_bonus=0 close_armor_penalty=0 supply_range=9
+
+unit id=infantry  name=Infantry_Brigade   class=infantry  move=foot  target=soft mp=3 soft=6 hard=0 def=6 ammo=8 cost=110
+unit id=veteran   name=Veteran_Brigade    class=infantry  move=foot  target=soft mp=3 soft=8 hard=0 def=7 ammo=8 cost=170
+unit id=sharpshoot name=Sharpshooters     class=recon     move=foot  target=soft mp=4 soft=5 hard=0 def=5 ammo=8 cost=130 spot=3
+unit id=pioneers  name=Pioneers           class=engineer  move=foot  target=soft mp=3 soft=5 hard=0 def=5 ammo=6 cost=130 flags=sapper
+unit id=cavalry   name=Cavalry_Brigade    class=cavalry   move=horse target=soft mp=6 soft=6 hard=0 def=4 ammo=6 cost=160 flags=charge
+unit id=scouts    name=Cavalry_Scouts     class=recon     move=horse target=soft mp=7 soft=3 hard=0 def=3 ammo=5 cost=100
+unit id=napoleon  name=Napoleon_Battery   class=artillery move=horse target=soft mp=3 range=2 soft=9 hard=0 def=2 ammo=7 cost=200 flags=support,bombard
+unit id=rifled    name=Rifled_Battery     class=artillery move=horse target=soft mp=3 range=3 soft=8 hard=0 def=2 ammo=6 cost=220 flags=support,bombard
+unit id=earthwork name=Earthworks         class=fortification move=static target=hard mp=0 soft=6 hard=0 def=10 ammo=10 cost=200

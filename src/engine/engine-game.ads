@@ -30,6 +30,8 @@ package Engine.Game is
    type Cell_Grid is array (Col_Range, Row_Range) of Cell;
    type Bool_Grid is array (Col_Range, Row_Range) of Boolean;
    type Vision_Array is array (Player_Side) of Bool_Grid;
+   type Int_Grid is array (Col_Range, Row_Range) of Integer;
+   type Supply_Array is array (Player_Side) of Int_Grid;
 
    type Control_Kind is (Human, Computer);
 
@@ -56,7 +58,24 @@ package Engine.Game is
       Charge_Bonus : Natural := 0;  --  attack bonus for Charge units
       Square_Bonus : Natural := 0;  --  infantry defence vs cavalry
       Close_Armor_Penalty : Natural := 3;
+      Supply_Range : Natural := 8;  --  full supply within this many MP
    end record;
+
+   --  Weather. Rain, snow and fog ground aircraft; mud and snow slow
+   --  ground movement off the roads; bad weather shortens sight.
+   type Weather_Kind is (Fair, Overcast, Rain, Snow, Mist);
+   type Climate_Kind is (Always_Fair, Temperate, Wet, Winter);
+
+   type Planned_Weather is record
+      Turn : Positive     := 1;
+      Kind : Weather_Kind := Fair;
+   end record;
+   package Weather_Vectors is new Ada.Containers.Vectors
+     (Positive, Planned_Weather);
+
+   --  Where a side draws supply from besides its own towns.
+   type Edge_Kind is (Auto, No_Edge, West, East, North, South);
+   type Edge_Array is array (Player_Side) of Edge_Kind;
 
    --  Tutorial / briefing hints, triggered by turn number or event.
    type Hint is record
@@ -99,6 +118,12 @@ package Engine.Game is
       Hints         : Hint_Vectors.Vector;
       Reinforcements : Reinf_Vectors.Vector;
       Difficulty    : Difficulty_Level := Normal;
+      Weather       : Weather_Kind := Fair;
+      Forecast      : Weather_Kind := Fair;  --  next turn
+      Climate       : Climate_Kind := Always_Fair;
+      Weather_Plan  : Weather_Vectors.Vector;
+      Supply_Edge   : Edge_Array := (others => Auto);
+      Supply        : Supply_Array := (others => (others => (others => -1)));
       Victory_Grade : Unbounded_String;  --  e.g. "Decisive victory"
       Decisive      : Boolean := False;
       Turn          : Positive    := 1;
@@ -173,6 +198,8 @@ package Engine.Game is
 
    function Is_Enemy (U : Natural; Side : Player_Side) return Boolean is
      (U /= No_Unit and then G.Units (U).Side /= Side);
+   function Is_Naval (U : Unit_Index) return Boolean is
+     (Is_Naval (Type_Of (U)));
 
    --  Enemy ground unit adjacent (zone of control), ignoring fog.
    function Enemy_Adjacent (H : Hex; Side : Player_Side) return Boolean;
@@ -202,6 +229,35 @@ package Engine.Game is
 
    function Hex_Seen (H : Hex; By : Player_Side) return Boolean is
      (not G.Fog or else G.Seen (By) (H.Col, H.Row));
+
+   -------------
+   -- Weather --
+   -------------
+
+   --  Aircraft cannot fly in rain, snow or fog.
+   function Grounded return Boolean is (G.Weather in Rain | Snow | Mist);
+   function Weather_Name (W : Weather_Kind) return String;
+   function Weather_Effects (W : Weather_Kind) return String;
+   function Climate_Name (C : Climate_Kind) return String;
+
+   --  Extra movement cost of entering terrain T in the current weather.
+   function Weather_Penalty (T : Terrain_Kind; M : Move_Class) return Natural;
+
+   ------------
+   -- Supply --
+   ------------
+
+   --  Supply flows from a side's own towns, cities, fortresses and
+   --  airfields and from its supply edge of the map, along passable
+   --  ground, but not through enemy units or unoccupied hexes in an
+   --  enemy zone of control. Recomputed by Update_Vision.
+   type Supply_Level is (Supplied, Low_Supply, Cut_Off);
+
+   procedure Update_Supply;
+   function Supply_At (H : Hex; Side : Player_Side) return Supply_Level;
+   function Supply_Of (U : Unit_Index) return Supply_Level;
+   function Supply_Name (L : Supply_Level) return String;
+   function Edge_Name (E : Edge_Kind) return String;
 
    --------------
    -- Movement --
@@ -286,6 +342,10 @@ package Engine.Game is
    procedure Remove_Unit (U : Unit_Index);   --  silently, e.g. campaign
    procedure Place_Occupants;                --  rebuild from unit list
    procedure Start_Game;
+
+   --  Give every side whose supply edge is Auto the map edge behind its
+   --  ground forces (called by the loader once units are placed).
+   procedure Resolve_Supply_Edges;
 
    --  Adjust prestige/experience for the chosen difficulty. Call once,
    --  after the human/computer sides are set.

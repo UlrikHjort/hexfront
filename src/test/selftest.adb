@@ -2,6 +2,8 @@
 --  then exercises save/load and a full campaign.
 with Ada.Text_IO;            use Ada.Text_IO;
 with Ada.Command_Line;       use Ada.Command_Line;
+with Ada.Environment_Variables;
+with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;  use Ada.Strings.Unbounded;
 with Engine;                 use Engine;
 with Engine.Game;            use Engine.Game;
@@ -17,9 +19,14 @@ with Engine.Hexes;              use type Engine.Hexes.Hex;
 procedure Selftest is
    Verbose : constant Boolean :=
      Argument_Count > 0 and then Argument (1) = "-v";
+   Supply_Stats : constant Boolean :=
+     Argument_Count > 0 and then Argument (1) = "-s";
    Rounds  : constant Positive :=
-     (if Argument_Count > 0 and then Argument (1) /= "-v"
+     (if Argument_Count > 0 and then Argument (1) (1) /= '-'
       then Positive'Value (Argument (1)) else 1);
+   --  Unit-turns spent in each supply state, per side ("-s").
+   Supply_Count : array (Player_Side, Supply_Level) of Natural :=
+     (others => (others => 0));
 
    procedure Play_Turn is
    begin
@@ -36,6 +43,14 @@ procedure Selftest is
       G.Sides (2).Control := Computer;
       while G.Winner = 0 loop
          Play_Turn;
+         if Supply_Stats then
+            for I in G.Units.First_Index .. G.Units.Last_Index loop
+               if G.Units (I).Alive then
+                  Supply_Count (G.Units (I).Side, Supply_Of (I)) :=
+                    Supply_Count (G.Units (I).Side, Supply_Of (I)) + 1;
+               end if;
+            end loop;
+         end if;
       end loop;
    end Play_Out;
 
@@ -50,22 +65,48 @@ procedure Selftest is
       return N;
    end Alive;
 
-   Wins : array (1 .. 20, Player_Side) of Natural :=
+   Wins : array (1 .. 40, Player_Side) of Natural :=
      (others => (others => 0));
+   Att_Wins : array (1 .. 40) of Natural := (others => 0);
+   Played   : array (1 .. 40) of Boolean := (others => False);
    List : constant Info_Vectors.Vector := List_Scenarios;
 begin
    Record_Effects := False;
    for R in 1 .. Rounds loop
       for I in List.First_Index .. List.Last_Index loop
+         --  HEXFRONT_ONLY=<file name part> restricts the scenario runs.
+         if Ada.Environment_Variables.Exists ("HEXFRONT_ONLY")
+           and then Ada.Strings.Fixed.Index
+             (To_String (List (I).Path),
+              Ada.Environment_Variables.Value ("HEXFRONT_ONLY")) = 0
+         then
+            goto Skip;
+         end if;
          Load_Scenario (To_String (List (I).Path));
          Play_Out;
          Wins (I, G.Winner) := Wins (I, G.Winner) + 1;
+         if G.Winner = G.Attacker then
+            Att_Wins (I) := Att_Wins (I) + 1;
+         end if;
+         Played (I) := True;
          if Verbose then
             for M of Messages loop
                Put_Line ("   " & M);
             end loop;
          end if;
          Messages.Clear;
+         if Supply_Stats then
+            Put ("   supply (ok/low/cut) edges " & Edge_Name (G.Supply_Edge (1))
+                 & "/" & Edge_Name (G.Supply_Edge (2)) & ":");
+            for S in Player_Side loop
+               for L in Supply_Level loop
+                  Put (Supply_Count (S, L)'Image);
+               end loop;
+               Put (" |");
+            end loop;
+            New_Line;
+            Supply_Count := (others => (others => 0));
+         end if;
          if Rounds = 1 then
             Put_Line (To_String (List (I).Title) & ": "
                       & To_String (G.Sides (G.Winner).Name)
@@ -74,12 +115,15 @@ begin
                       & Victory_Hexes_Total'Image & ", units left"
                       & Alive (1)'Image & " vs" & Alive (2)'Image);
          end if;
+         <<Skip>>
       end loop;
    end loop;
    if Rounds > 1 then
       for I in List.First_Index .. List.Last_Index loop
-         Put_Line (To_String (List (I).Title) & ": attacker won"
-                   & Wins (I, 1)'Image & " of" & Rounds'Image);
+         if Played (I) then
+            Put_Line (To_String (List (I).Title) & ": attacker won"
+                      & Att_Wins (I)'Image & " of" & Rounds'Image);
+         end if;
       end loop;
    end if;
 

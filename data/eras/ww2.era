@@ -1,12 +1,12 @@
 # World War II era definition.
 # unit keys: id name class move target mp range soft hard def ammo fuel cost flags
 #   class : infantry cavalry armor recon artillery anti_tank anti_air engineer
-#           fortification fighter bomber
-#   move  : foot horse wheeled tracked static air
+#           fortification fighter bomber warship
+#   move  : foot horse wheeled tracked static air naval
 #   other : air=<attack vs aircraft> spot=<vision> buy=no
 #   flags : charge support bombard sapper   (comma separated)
 era name=World_War_II
-rule max_entrench=4 charge_bonus=0 square_bonus=0 close_armor_penalty=3
+rule max_entrench=4 charge_bonus=0 square_bonus=0 close_armor_penalty=3 supply_range=10
 
 unit id=infantry  name=Infantry          class=infantry  move=foot    target=soft mp=3 soft=6  hard=2  air=1 def=6  ammo=8  cost=120
 unit id=pioneers  name=Pioneers          class=engineer  move=foot    target=soft mp=3 soft=7  hard=4  air=1 def=6  ammo=6  cost=170 flags=sapper
@@ -26,3 +26,8 @@ unit id=flak      name=Flak_Gun          class=anti_air  move=wheeled target=sof
 unit id=fighter   name=Fighter           class=fighter   move=air target=air mp=9 soft=3  hard=1 air=10 def=8 ammo=6 fuel=40 cost=300
 unit id=divebomb  name=Dive_Bomber       class=bomber    move=air target=air mp=7 soft=10 hard=9 air=2  def=5 ammo=4 fuel=35 cost=340
 unit id=medbomb   name=Medium_Bomber     class=bomber    move=air target=air mp=8 soft=12 hard=5 air=3  def=6 ammo=3 fuel=45 cost=380
+
+# Warships: water hexes only, cannot take ground; replenish next to an own port.
+unit id=battleship name=Battleship       class=warship   move=naval target=hard mp=4 range=4 soft=12 hard=11 air=4 def=14 ammo=6 cost=600 buy=no flags=bombard
+unit id=cruiser   name=Cruiser           class=warship   move=naval target=hard mp=6 range=3 soft=9  hard=8  air=5 def=10 ammo=7 cost=400 buy=no flags=bombard
+unit id=destroyer name=Destroyer         class=warship   move=naval target=hard mp=8 range=2 soft=6  hard=6  air=6 def=7  ammo=8 cost=250 buy=no flags=support

@@ -84,7 +84,6 @@ save('move_tracks', mix(rumble, clank), 0.55)
 save('move_wheels', mix(noise(0.9, 1.5, 0.06, attack=0.1), tone(70, 0.9, 1.5, 0.3, slide=20)), 0.5)
 save('move_air', mix(tone(110, 1.1, 1.0, 0.4, vibrato=0.04, slide=-30, shape='square'),
                      noise(1.1, 1.2, 0.2, 0.3, attack=0.2)), 0.45)
-
 # --- weapons --------------------------------------------------------------
 save('fire_rifle', seq(*[noise(0.09, 45, 0.7) + silence(rnd.uniform(0.02, 0.09)) for _ in range(6)]), 0.6)
 save('fire_mg', seq(*[noise(0.04, 80, 0.8) + silence(0.035) for _ in range(14)]), 0.55)
@@ -95,7 +94,6 @@ save('fire_bomb', seq(whistle, mix(noise(1.0, 4, 0.15), tone(45, 1.0, 4, 1.0))),
 save('fire_musket', seq(*[noise(0.15, 20, 0.6) + silence(rnd.uniform(0.0, 0.06)) for _ in range(8)]), 0.6)
 save('fire_cannon', mix(noise(0.9, 5, 0.25), tone(48, 0.9, 5, 0.9)), 0.85)
 save('fire_air', seq(*[noise(0.03, 90, 0.9) + silence(0.025) for _ in range(18)]), 0.5)
-
 # --- events ---------------------------------------------------------------
 save('explosion', mix(noise(1.6, 2.5, 0.08), noise(0.4, 12, 0.6, 0.5), tone(35, 1.4, 3, 1.0)), 0.95)
 notes = [392, 523, 659, 784]
@@ -107,4 +105,11 @@ save('victory', seq(*[tone(f, 0.16, 4, shape='brass') for f in notes],
 save('defeat', seq(*[tone(f, 0.35, 3, shape='brass') for f in (392, 349, 311)],
                    tone(262, 1.0, 1.5, shape='brass')), 0.6)
 save('click', tone(1200, 0.05, 60, 0.4), 0.3)
+# --- naval (appended so the earlier sounds stay unchanged) ---------------
+save('move_ship', mix(tone(62, 1.4, 0.8, 0.5, vibrato=0.02), noise(1.4, 1.0, 0.03, 0.6, attack=0.3),
+                     at(tone(150, 0.9, 1.2, 0.35, shape='brass'), 0.2)), 0.5)
+
+save('fire_naval', seq(mix(noise(0.5, 6, 0.3), tone(38, 0.5, 5, 1.0)), silence(0.15),
+                      mix(noise(1.4, 3, 0.08), tone(32, 1.4, 3, 1.0))), 0.95)
+
 print('sounds written to', os.path.normpath(OUT))

@@ -6,6 +6,8 @@ era ww1
 turns 18
 attacker 1
 first 1
+climate temperate
+weather turn=1 fair
 side 1 name=British_Army color=150,120,70 control=human prestige=300 income=50
 side 2 name=German_Army color=110,120,130 control=ai prestige=60 income=10
 map 24 14

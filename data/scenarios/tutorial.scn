@@ -97,6 +97,23 @@ more
 more Fresh units have arrived at Camp Alpha. Scenarios can bring in
 more reinforcements on set turns - for you or for the enemy - so keep
 more an eye on the combat log at the start of each turn.
+weather turn=6 rain
+weather turn=7 overcast
+hint event=weather WEATHER
+more
+more The weather has changed - see the status panel at the top right. Rain,
+more snow and fog GROUND ALL AIRCRAFT. Mud slows vehicles and horses off
+more the roads, and bad weather shortens how far your units can see.
+more The forecast tells you what tomorrow brings: plan around it.
+hint turn=8 SUPPLY LINES
+more
+more Supply flows from your towns and airfields and from your own edge of
+more the map (here: the west). It cannot pass enemy units or the hexes
+more next to them. Press S (or View > Show supply lines) to see it:
+more amber = low supply, red = cut off.
+more
+more Units cut off fight worse, cannot resupply and lose strength every
+more turn. Cutting the enemy off is as good as beating him!
 map 16 10
 . . . . . . . ~ . . . . . . . .
 . . . . . f f ~ . . . . h h . .

@@ -45,6 +45,8 @@ package body Engine.Save is
                 & " fog=" & B (G.Fog) & " fair=" & B (G.Fair_AI)
                 & " difficulty="
                 & Image (Difficulty_Level'Pos (G.Difficulty)));
+      Put_Line (F, "weather now=" & Image (Weather_Kind'Pos (G.Weather))
+                & " next=" & Image (Weather_Kind'Pos (G.Forecast)));
       for I in G.Reinforcements.First_Index .. G.Reinforcements.Last_Index
       loop
          if G.Reinforcements (I).Done then
@@ -84,7 +86,8 @@ package body Engine.Save is
                & " moves=" & Image (U.Moves_Left)
                & " moved=" & B (U.Has_Moved)
                & " attacked=" & B (U.Has_Attacked)
-               & " core=" & B (U.Core));
+               & " core=" & B (U.Core)
+               & " cut=" & Image (U.Cut_Turns));
          end if;
       end loop;
       Engine.Campaign.Write_State (F);
@@ -137,6 +140,17 @@ package body Engine.Save is
                G.Difficulty := Difficulty_Level'Val
                  (Integer'Max
                     (0, Integer'Min (2, Int (Line, "difficulty", 1))));
+            elsif KW = "weather" then
+               declare
+                  function W (K : String) return Weather_Kind is
+                    (Weather_Kind'Val
+                       (Integer'Max (0, Integer'Min
+                          (Weather_Kind'Pos (Weather_Kind'Last),
+                           Int (Line, K, 0)))));
+               begin
+                  G.Weather  := W ("now");
+                  G.Forecast := W ("next");
+               end;
             elsif KW = "reinf_done" then
                declare
                   N : constant Integer := Int (Line, "n", 0);
@@ -192,6 +206,7 @@ package body Engine.Save is
                   U.Has_Moved    := Int (Line, "moved", 0) = 1;
                   U.Has_Attacked := Int (Line, "attacked", 0) = 1;
                   U.Core         := Int (Line, "core", 0) = 1;
+                  U.Cut_Turns    := Int (Line, "cut", 0);
                   G.Units.Append (U);
                end;
             else

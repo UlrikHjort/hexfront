@@ -1,7 +1,7 @@
 # Great War era definition. Deep entrenchment, slow tanks,
 # cavalry still hoping for the breakthrough.
 era name=The_Great_War
-rule max_entrench=4 charge_bonus=2 square_bonus=0 close_armor_penalty=4
+rule max_entrench=4 charge_bonus=2 square_bonus=0 close_armor_penalty=4 supply_range=8
 
 unit id=infantry  name=Infantry            class=infantry  move=foot    target=soft mp=3 soft=6  hard=1 air=1 def=5 ammo=8  cost=100
 unit id=mg        name=Machine-gun_Company class=infantry  move=foot    target=soft mp=2 soft=9  hard=1 air=2 def=5 ammo=10 cost=150

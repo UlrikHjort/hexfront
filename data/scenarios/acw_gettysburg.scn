@@ -1,0 +1,86 @@
+title Gettysburg (1863)
+description July 1863. After the first day's fighting your army holds the town,
+description but the enemy has dug in on the high ground beyond it: Culp's Hill,
+description Cemetery Hill, Cemetery Ridge and the Round Tops form a fishhook.
+description Take all four heights before his last corps arrive. Rifled muskets
+description make frontal assaults costly - use your guns. 14 turns.
+era acw
+turns 14
+attacker 1
+first 1
+climate temperate
+weather turn=1 fair
+weather turn=2 fair
+supply side=1 edge=west
+supply side=2 edge=east
+side 1 name=Army_of_Northern_Virginia color=150,150,150 control=human prestige=200 income=20
+side 2 name=Army_of_the_Potomac color=40,60,140 control=ai prestige=80 income=10
+map 24 16
+f . . . . . . . . . = . . . . f . ~ . . . . . f
+. . . . . . f . . . = f f . f . . ~ . . . f . .
+= = t = . . h . . . = . . . . . . ~ . . . . . f
+. . . . = = = = . = = = . = . = . ~ . = . = f =
+. . . . . f f . = . t = = . = . = ~ = . = f = .
+. . f f . . h . . = = = . . . h f ~ . f f . . .
+. . f . f . h f f = f . h = . f . ~ . f . . . .
+. . . f . f h . . = . h . = . . . ~ . f . . . .
+. . . . . . h . = . f h . . = f . ~ . f . . . .
+. . . . . . h f = . . h . f = f . ~ . f f . . .
+. . . . . f h = = . . h . . = = f ~ . . . f . .
+. f . f f . h = t . . h . f . = . ~ . . . . . .
+. . . f . f f = . f f . . f . . = . ~ . . . f .
+~ ~ . f . . = f . . f h . . . . t = ~ . . f . f
+. ~ . f . = = . . . . M . . . . . . ~ = = = f .
+f f ~ ~ . = f f . . . . . f . . . . ~ f . . = =
+territory side=1 cols=0-10
+territory side=2 cols=11-23
+place at=10,4 name=Gettysburg owner=1
+place at=2,2 name=Cashtown owner=1
+place at=12,6 name=Cemetery_Hill owner=2 victory
+place at=15,5 name=Culps_Hill owner=2 victory
+place at=11,9 name=Cemetery_Ridge owner=2 victory
+place at=11,13 name=Little_Round_Top owner=2 victory
+place at=16,13 name=Two_Taverns owner=2
+place at=8,11 name=Peach_Orchard owner=2
+reinforce turn=2 side=1 type=veteran at=0,7
+reinforce turn=2 side=1 type=veteran at=0,9
+reinforce turn=2 side=1 type=infantry at=0,8
+reinforce turn=2 side=1 type=rifled at=1,8
+reinforce turn=5 side=2 type=infantry at=23,14
+reinforce turn=5 side=2 type=veteran at=22,15
+reinforce turn=5 side=2 type=napoleon at=23,13
+reinforce turn=8 side=2 type=infantry at=23,15
+reinforce turn=8 side=2 type=infantry at=21,15
+unit side=1 type=veteran at=7,3
+unit side=1 type=infantry at=8,4
+unit side=1 type=infantry at=9,5
+unit side=1 type=veteran at=11,3
+unit side=1 type=infantry at=12,2
+unit side=1 type=infantry at=14,2
+unit side=1 type=infantry at=5,7
+unit side=1 type=veteran at=5,9
+unit side=1 type=infantry at=5,11
+unit side=1 type=infantry at=6,12
+unit side=1 type=sharpshoot at=9,3
+unit side=1 type=napoleon at=6,5
+unit side=1 type=rifled at=6,8
+unit side=1 type=napoleon at=6,10
+unit side=1 type=rifled at=13,1
+unit side=1 type=cavalry at=16,1
+unit side=1 type=pioneers at=7,6
+unit side=2 type=infantry at=12,6 entrench=2
+unit side=2 type=veteran at=15,5 entrench=2
+unit side=2 type=infantry at=13,6 entrench=2
+unit side=2 type=infantry at=11,8 entrench=2
+unit side=2 type=infantry at=11,10 entrench=2
+unit side=2 type=infantry at=11,13 entrench=2
+unit side=2 type=infantry at=14,5 entrench=2
+unit side=2 type=infantry at=11,7 entrench=2
+unit side=2 type=earthwork at=12,7
+unit side=2 type=rifled at=12,8
+unit side=2 type=napoleon at=13,7
+unit side=2 type=rifled at=12,10
+unit side=2 type=sharpshoot at=10,12
+unit side=2 type=cavalry at=18,11
+unit side=2 type=infantry at=8,11
+unit side=2 type=infantry at=14,9
