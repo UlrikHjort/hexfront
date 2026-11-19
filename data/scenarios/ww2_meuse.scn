@@ -41,6 +41,7 @@ place at=26,1 name=Airfield owner=1
 place at=25,14 name=Airfield owner=1
 place at=2,7 name=Airfield owner=2
 place at=6,13 name=Airfield owner=2
+reinforce turn=7 side=2 type=heavytank at=1,9
 unit side=1 type=medtank at=26,8 core
 unit side=1 type=medtank at=25,3 core
 unit side=1 type=lighttank at=27,7 core

@@ -10,8 +10,10 @@ package body Engine.Campaign is
 
    procedure Load_Campaign (Path : String) is
       F : File_Type;
+      D : constant Difficulty_Level := C.Difficulty;
    begin
       C := (others => <>);
+      C.Difficulty := D;   --  chosen before loading
       C.Path := To_Unbounded_String (Path);
       Open (F, In_File, Path);
       while not End_Of_File (F) loop
@@ -37,7 +39,9 @@ package body Engine.Campaign is
                    On_Win  => To_Unbounded_String
                      (Value (Line, "win", "victory")),
                    On_Loss => To_Unbounded_String
-                     (Value (Line, "loss", "defeat"))));
+                     (Value (Line, "loss", "defeat")),
+                   On_Decisive => To_Unbounded_String
+                     (Value (Line, "decisive"))));
             end if;
          end;
       end loop;
@@ -138,6 +142,7 @@ package body Engine.Campaign is
       end if;
       G.Sides (C.Player).Prestige := G.Sides (C.Player).Prestige + C.Prestige;
       Start_Game;
+      Apply_Difficulty (C.Difficulty);
       Log ("Campaign " & To_String (C.Title) & ", battle"
            & Natural'Image (C.Current));
    end Start_Stage;
@@ -154,9 +159,14 @@ package body Engine.Campaign is
 
    function Finish_Stage (Report : out Unbounded_String) return Boolean is
       Won  : constant Boolean := G.Winner = C.Player;
+      St   : constant Stage := C.Stages (C.Current);
       Next : constant String :=
-        To_String (if Won then C.Stages (C.Current).On_Win
-                   else C.Stages (C.Current).On_Loss);
+        To_String (if Won and then G.Decisive
+                     and then Length (St.On_Decisive) > 0
+                   then St.On_Decisive
+                   elsif Won then St.On_Win
+                   else St.On_Loss);
+      Bonus : constant Natural := (if Won and then G.Decisive then 150 else 0);
       Survivors : Natural := 0;
    begin
       if Won then
@@ -171,11 +181,16 @@ package body Engine.Campaign is
             Survivors := Survivors + 1;
          end if;
       end loop;
-      C.Prestige := Integer'Max (0, G.Sides (C.Player).Prestige);
+      C.Prestige := Integer'Max (0, G.Sides (C.Player).Prestige) + Bonus;
       C.Fresh := False;
 
       Report := To_Unbounded_String
-        ((if Won then "Battle won!" else "Battle lost.")
+        (To_String (G.Victory_Grade)
+         & (if Won then "!" else " for the enemy.")
+         & (if Bonus > 0
+            then ASCII.LF & "Decisive result: +" & Image (Bonus)
+                 & " bonus prestige."
+            else "")
          & ASCII.LF & Image (Survivors) & " core units survive and keep "
          & "their experience. Prestige carried: " & Image (C.Prestige));
 
@@ -314,7 +329,9 @@ package body Engine.Campaign is
       Put_Line (F, "campaign_state current=" & Image (C.Current)
                 & " prestige=" & Image (C.Prestige)
                 & " fresh=" & (if C.Fresh then "1" else "0")
-                & " won=" & Image (C.Won) & " lost=" & Image (C.Lost));
+                & " won=" & Image (C.Won) & " lost=" & Image (C.Lost)
+                & " difficulty="
+                & Image (Difficulty_Level'Pos (C.Difficulty)));
       for K of C.Carried loop
          Put_Line (F, "carried type=" & To_String (K.Type_Id)
                    & " exp=" & Image (K.Experience));
@@ -332,6 +349,8 @@ package body Engine.Campaign is
          C.Fresh    := Int (Line, "fresh", 1) = 1;
          C.Won      := Int (Line, "won", 0);
          C.Lost     := Int (Line, "lost", 0);
+         C.Difficulty := Difficulty_Level'Val
+           (Integer'Max (0, Integer'Min (2, Int (Line, "difficulty", 1))));
       elsif KW = "carried" then
          C.Carried.Append
            ((To_Unbounded_String (Value (Line, "type")),

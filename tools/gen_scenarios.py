@@ -41,6 +41,12 @@ def write(name, header, m, territory, places, units, extra=()):
         f.write("\n".join(s) + "\n")
 
 
+def R(turn, side, lst, opt=""):
+    """Scheduled reinforcements arriving at the start of side's turn."""
+    return [f"reinforce turn={turn} side={side} type={t} at={c},{r}" + (" " + opt if opt else "")
+            for t, c, r in lst]
+
+
 def U(side, lst, opt=""):
     return [(side, t, c, r, opt) for t, c, r in lst]
 
@@ -168,7 +174,13 @@ units += U(1, [("divebomb", 1, 8)])
 units += U(2, [("infantry", 9, 4)], "entrench=2")
 units += U(2, [("atgun", 10, 6), ("infantry", 12, 3), ("fieldart", 14, 4), ("armcar", 8, 1)])
 units += U(2, [("infantry", 13, 6)], "entrench=1")
-write("tutorial.scn", hdr, m, [(1, 0, 4), (2, 5, 15)], places, units)
+hdr += ["hint event=reinforcements REINFORCEMENTS",
+        "more",
+        "more Fresh units have arrived at Camp Alpha. Scenarios can bring in",
+        "more reinforcements on set turns - for you or for the enemy - so keep",
+        "more an eye on the combat log at the start of each turn."]
+write("tutorial.scn", hdr, m, [(1, 0, 4), (2, 5, 15)], places, units,
+      extra=R(5, 1, [("medtank", 1, 5)]))
 
 # =====================================================================
 # WW2: Breakthrough at the Meuse (campaign stage 1)
@@ -209,7 +221,8 @@ fr = [("armcar", 18, 8), ("cavalry", 17, 4), ("infantry", 11, 8), ("bunker", 11,
 for t, c, r in fr:
     units.append((2, t, c, r, "entrench=2" if t in ("infantry", "atgun") and c <= 12 else ""))
 units += U(2, [("fighter", 2, 7), ("medbomb", 6, 13)])
-write("ww2_meuse.scn", hdr, m, [(2, 0, 21), (1, 22, 27)], places, units)
+write("ww2_meuse.scn", hdr, m, [(2, 0, 21), (1, 22, 27)], places, units,
+      extra=R(7, 2, [("heavytank", 1, 9)]))
 
 # =====================================================================
 # WW2: Dash to the Channel (campaign stage 2)
@@ -246,7 +259,9 @@ units += U(2, [("heavytank", 15, 3), ("heavytank", 17, 5), ("infantry", 16, 4), 
                ("infantry", 7, 11), ("infantry", 3, 3), ("flak", 5, 6), ("infantry", 11, 4),
                ("cavalry", 20, 6)])
 units += U(2, [("fighter", 5, 6), ("fighter", 8, 1), ("medbomb", 3, 3)])
-write("ww2_channel.scn", hdr, m, [(2, 0, 21), (1, 22, 29)], places, units)
+write("ww2_channel.scn", hdr, m, [(2, 0, 21), (1, 22, 29)], places, units,
+      extra=R(6, 2, [("heavytank", 14, 2)])
+      + R(6, 1, [("infantry", 29, 7), ("infantry", 29, 9)]))
 
 # =====================================================================
 # WW2: The Dunkirk Perimeter (campaign stage 3)
@@ -284,7 +299,8 @@ for t, c, r in de:
 units += U(2, [("fieldart", 6, 4), ("fieldart", 12, 3), ("heavyart", 5, 3), ("flak", 9, 4),
                ("medtank", 8, 3), ("infantry", 5, 2), ("infantry", 21, 2)])
 units += U(2, [("fighter", 3, 3), ("fighter", 5, 2)])
-write("ww2_dunkirk.scn", hdr, m, [(2, 0, 23)], places, units)
+write("ww2_dunkirk.scn", hdr, m, [(2, 0, 23)], places, units,
+      extra=R(5, 1, [("heavyart", 12, 13)]))
 
 # =====================================================================
 # WW1: The Big Push
@@ -323,7 +339,8 @@ for t, c, r in [("mg", 12, 2), ("infantry", 12, 5), ("mg", 12, 7), ("infantry", 
                 ("howitzer", 19, 6), ("armcar", 21, 5), ("aagun", 18, 8)]:
     units.append((2, t, c, r, "entrench=3" if t in ("mg", "infantry") and c <= 16 else ""))
 units += U(2, [("scout", 22, 2)])
-write("ww1_bigpush.scn", hdr, m, [(1, 0, 8), (2, 9, 23)], places, units)
+write("ww1_bigpush.scn", hdr, m, [(1, 0, 8), (2, 9, 23)], places, units,
+      extra=R(8, 1, [("infantry", 0, 6), ("infantry", 0, 8), ("tank", 1, 6)]))
 
 # =====================================================================
 # Napoleonic: Austerlitz
@@ -356,7 +373,9 @@ units += U(2, [("line", 9, 11), ("line", 9, 12), ("line", 9, 9), ("line", 10, 13
                ("line", 12, 8), ("line", 14, 9), ("grenadier", 15, 6), ("guard", 18, 7), ("line", 11, 3),
                ("cossacks", 14, 2), ("cossacks", 9, 14), ("dragoons", 17, 3), ("cuirass", 18, 5),
                ("footart", 13, 4), ("footart", 10, 10), ("footart", 14, 8), ("line", 20, 8)])
-write("nap_austerlitz.scn", hdr, m, [(1, 0, 7), (2, 8, 23)], places, units)
+hdr += ["hint turn=6 Marshal Davout's corps arrives from the south after a forced march!"]
+write("nap_austerlitz.scn", hdr, m, [(1, 0, 7), (2, 8, 23)], places, units,
+      extra=R(6, 1, [("line", 2, 14), ("line", 3, 15), ("dragoons", 1, 13)]))
 
 
 # =====================================================================
@@ -392,7 +411,8 @@ units += U(2, [("line", 13, 7), ("line", 12, 6), ("line", 14, 6), ("grenadier", 
                ("footart", 12, 7), ("footart", 15, 7), ("footart", 5, 9), ("hussars", 8, 6),
                ("dragoons", 11, 9), ("cuirass", 14, 9), ("line", 18, 6), ("grenadier", 6, 8),
                ("line", 11, 13)])
-write("nap_ulm.scn", hdr, m, [(2, 0, 25), (1, 0, 0)], places, units)
+write("nap_ulm.scn", hdr, m, [(2, 0, 25), (1, 0, 0)], places, units,
+      extra=R(7, 1, [("line", 24, 9), ("footart", 25, 10)]))
 
 # =====================================================================
 # WW1: Operation Michael (campaign stage 1) - attack from the east
@@ -430,7 +450,8 @@ for t, c, r in [("infantry", 17, 1), ("mg", 16, 4), ("infantry", 16, 7), ("mg", 
 units += U(2, [("fieldgun", 14, 3), ("fieldgun", 14, 9), ("howitzer", 9, 6), ("tank", 7, 8), ("tank", 9, 3),
                ("cavalry", 5, 6), ("aagun", 10, 5), ("infantry", 3, 8)])
 units += U(2, [("scout", 2, 2)])
-write("ww1_michael.scn", hdr, m, [(2, 0, 19), (1, 20, 25)], places, units)
+write("ww1_michael.scn", hdr, m, [(2, 0, 19), (1, 20, 25)], places, units,
+      extra=R(6, 1, [("storm", 25, 7)]))
 
 # =====================================================================
 # WW1: Drive on the Marne (campaign stage 2) - attack north to south
@@ -467,7 +488,10 @@ units += U(2, [("fieldgun", 9, 6), ("fieldgun", 17, 6), ("infantry", 4, 8), ("in
                ("infantry", 8, 12), ("mg", 9, 12), ("tank", 12, 12), ("cavalry", 6, 11), ("howitzer", 16, 12),
                ("infantry", 20, 11), ("aagun", 13, 9)])
 units += U(2, [("scout", 16, 15)])
-write("ww1_marne.scn", hdr, m, [(2, 0, 23)], places, units)
+hdr += ["hint turn=10 American divisions are arriving at Chateau-Thierry!",
+        "more Fresh troops will stiffen the Allied line on the Marne - push hard."]
+write("ww1_marne.scn", hdr, m, [(2, 0, 23)], places, units,
+      extra=R(10, 2, [("infantry", 8, 15), ("mg", 7, 15)]))
 
 # =====================================================================
 # Campaign

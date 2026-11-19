@@ -266,9 +266,17 @@ package body Engine.Game is
                  and then not Known (O, G.Units (U).Side));
    end Can_Move_To;
 
+   type Undo_State is record
+      Valid  : Boolean := False;
+      U      : Natural := 0;
+      Before : Unit;
+   end record;
+   Undo : Undo_State;
+
    procedure Capture (H : Hex; Side : Player_Side) is
       C : Cell renames G.Cells (H.Col, H.Row);
    begin
+      Undo.Valid := False;
       if (Is_Capturable (C.Terrain) or else C.Victory)
         and then C.Owner /= Side
       then
@@ -293,6 +301,22 @@ package body Engine.Game is
       end if;
    end Capture;
 
+   function Can_Undo return Boolean is
+     (Undo.Valid and then Undo.U /= 0 and then G.Units (Undo.U).Alive);
+
+   function Visible_Enemies (Side : Player_Side) return Natural is
+      N : Natural := 0;
+   begin
+      for I in G.Units.First_Index .. G.Units.Last_Index loop
+         if G.Units (I).Alive and then G.Units (I).Side /= Side
+           and then Visible (I, Side)
+         then
+            N := N + 1;
+         end if;
+      end loop;
+      return N;
+   end Visible_Enemies;
+
    procedure Move_Unit (U : Unit_Index; To : Hex; R : Reach_Map) is
       Un      : Unit renames G.Units (U);
       T       : constant Unit_Type := G.Types (Un.Kind);
@@ -307,6 +331,7 @@ package body Engine.Game is
       if not Can_Move_To (U, R, To) then
          return;
       end if;
+      Undo.Valid := False;
       --  Rebuild the path (destination back to start).
       while H /= Un.Pos and then Len < Path'Last loop
          Len := Len + 1;
@@ -401,6 +426,49 @@ package body Engine.Game is
       Raise_Event ("move");
       Check_Victory;
    end Move_Unit;
+
+   procedure Move_Unit_Undoable (U : Unit_Index; To : Hex; R : Reach_Map)
+   is
+      Side   : constant Player_Side := G.Units (U).Side;
+      Before : constant Unit := G.Units (U);
+      Seen_Before : constant Natural := Visible_Enemies (Side);
+      Owner_Before : constant Side_Id :=
+        (if In_Map (To) then G.Cells (To.Col, To.Row).Owner else 0);
+   begin
+      Move_Unit (U, To, R);
+      if G.Units (U).Pos = To and then G.Winner = 0
+        and then Visible_Enemies (Side) <= Seen_Before
+        and then G.Cells (To.Col, To.Row).Owner = Owner_Before
+      then
+         Undo := (Valid => True, U => U, Before => Before);
+      else
+         Undo.Valid := False;
+      end if;
+   end Move_Unit_Undoable;
+
+   procedure Undo_Move is
+   begin
+      if not Can_Undo then
+         return;
+      end if;
+      declare
+         U   : constant Unit_Index := Undo.U;
+         Now : constant Hex := G.Units (U).Pos;
+         Old : constant Unit := Undo.Before;
+      begin
+         if Is_Air (U) then
+            G.Cells (Now.Col, Now.Row).Air := No_Unit;
+            G.Cells (Old.Pos.Col, Old.Pos.Row).Air := U;
+         else
+            G.Cells (Now.Col, Now.Row).Occupant := No_Unit;
+            G.Cells (Old.Pos.Col, Old.Pos.Row).Occupant := U;
+         end if;
+         G.Units (U) := Old;
+         Undo.Valid := False;
+         Update_Vision;
+         Log (Unit_Name (U) & " move undone");
+      end;
+   end Undo_Move;
 
    ------------
    -- Combat --
@@ -645,6 +713,7 @@ package body Engine.Game is
       if not Can_Attack (A, D) then
          return;
       end if;
+      Undo.Valid := False;
       Dist := Distance (G.Units (A).Pos, G.Units (D).Pos);
       Log (Unit_Name (A) & " attacks " & Unit_Name (D)
            & (if Is_Surrounded (D) then " (surrounded!)" else ""));
@@ -798,6 +867,7 @@ package body Engine.Game is
       if not Can_Resupply (U) then
          return;
       end if;
+      Undo.Valid := False;
       if Cut then
          Un.Ammo := Natural'Min (T.Max_Ammo, Un.Ammo + T.Max_Ammo / 2);
          Un.Fuel := Natural'Min (T.Max_Fuel, Un.Fuel + T.Max_Fuel / 2);
@@ -841,6 +911,7 @@ package body Engine.Game is
       if not Can_Reinforce (U) then
          return;
       end if;
+      Undo.Valid := False;
       Gain := Natural'Min (5, Max_Strength - Un.Strength);
       G.Sides (Un.Side).Prestige :=
         G.Sides (Un.Side).Prestige - Reinforce_Cost (U);
@@ -917,6 +988,7 @@ package body Engine.Game is
          return;
       end if;
       G.Sides (Side).Prestige := G.Sides (Side).Prestige - Ty.Cost;
+      Undo.Valid := False;
       U.Kind := T;
       U.Side := Side;
       U.Pos  := H;
@@ -953,6 +1025,7 @@ package body Engine.Game is
       Messages.Clear;
       Pending_Hints.Clear;
       Effects.Clear;
+      Undo.Valid := False;
    end Reset;
 
    procedure Add_Unit (U : Unit) is
@@ -988,9 +1061,93 @@ package body Engine.Game is
       end loop;
    end Place_Occupants;
 
-   procedure Begin_Side_Turn (S : Player_Side) is
+   function Income_Of (S : Player_Side) return Integer is
+      Base : constant Integer := G.Sides (S).Income;
    begin
-      G.Sides (S).Prestige := G.Sides (S).Prestige + G.Sides (S).Income;
+      --  Difficulty only scales the computer's income against a human.
+      if G.Sides (S).Control = Computer
+        and then G.Sides (Other (S)).Control = Human
+      then
+         case G.Difficulty is
+            when Easy   => return Base * 6 / 10;
+            when Normal => return Base;
+            when Hard   => return Base * 14 / 10;
+         end case;
+      end if;
+      return Base;
+   end Income_Of;
+
+   --  Nearest hex to H where a unit of type T can be placed.
+   function Free_Spot (H : Hex; T : Positive) return Hex is
+      Ty : constant Unit_Type := G.Types (T);
+   begin
+      for Ring in 0 .. 4 loop
+         for C in H.Col - Ring .. H.Col + Ring loop
+            for R in H.Row - Ring - 1 .. H.Row + Ring + 1 loop
+               declare
+                  P : constant Hex := (C, R);
+               begin
+                  if In_Map (P) and then Distance (P, H) = Ring
+                    and then (if Is_Air (Ty) then Air_At (P) = No_Unit
+                              else Unit_At (P) = No_Unit
+                                and then (Ty.Mover = Static
+                                          or else Move_Cost (Terrain_At (P),
+                                                             Ty.Mover)
+                                                  < Impassable))
+                  then
+                     return P;
+                  end if;
+               end;
+            end loop;
+         end loop;
+      end loop;
+      return No_Hex;
+   end Free_Spot;
+
+   procedure Arrivals (S : Player_Side) is
+   begin
+      for R of G.Reinforcements loop
+         if not R.Done and then R.Side = S and then R.Turn <= G.Turn
+           and then R.Kind <= Natural (G.Types.Length)
+         then
+            declare
+               P : constant Hex := Free_Spot (R.Pos, R.Kind);
+               U : Unit;
+            begin
+               if P /= No_Hex then
+                  R.Done := True;
+                  U.Kind := R.Kind;
+                  U.Side := S;
+                  U.Pos  := P;
+                  U.Ammo := G.Types (R.Kind).Max_Ammo;
+                  U.Fuel := G.Types (R.Kind).Max_Fuel;
+                  U.Core := R.Core;
+                  Add_Unit (U);
+                  Log ("Reinforcements arrive for "
+                       & To_String (G.Sides (S).Name) & ": "
+                       & To_String (G.Types (R.Kind).Name)
+                       & (if Length (G.Cells (P.Col, P.Row).Name) > 0
+                          then " at " & To_String (G.Cells (P.Col, P.Row).Name)
+                          else ""));
+                  declare
+                     E : Fx_Event;
+                  begin
+                     E.Kind := Fx_Deploy;
+                     E.To   := P;
+                     Add_Fx (E);
+                  end;
+               end if;
+            end;
+         end if;
+      end loop;
+   end Arrivals;
+
+   procedure Begin_Side_Turn (S : Player_Side) is
+      Arrived : constant Natural := Natural (G.Units.Length);
+   begin
+      Undo.Valid := False;
+      G.Sides (S).Prestige := G.Sides (S).Prestige + Income_Of (S);
+      Arrivals (S);
       for U of G.Units loop
          if U.Alive and then U.Side = S then
             if not U.Has_Moved and then not Is_Air (G.Types (U.Kind)) then
@@ -1003,6 +1160,9 @@ package body Engine.Game is
          end if;
       end loop;
       Update_Vision;
+      if Natural (G.Units.Length) > Arrived then
+         Raise_Event ("reinforcements");
+      end if;
       if G.Sides (S).Control = Human then
          for H of G.Hints loop
             if not H.Shown and then H.Turn = G.Turn then
@@ -1027,6 +1187,33 @@ package body Engine.Game is
       Log ("Turn 1: " & To_String (G.Sides (G.Current).Name));
       Begin_Side_Turn (G.Current);
    end Start_Game;
+
+   procedure Apply_Difficulty (D : Difficulty_Level) is
+   begin
+      G.Difficulty := D;
+      for S in Player_Side loop
+         if G.Sides (S).Control = Human
+           and then G.Sides (Other (S)).Control = Computer
+         then
+            G.Sides (S).Prestige :=
+              (case D is
+                  when Easy   => G.Sides (S).Prestige * 3 / 2,
+                  when Normal => G.Sides (S).Prestige,
+                  when Hard   => G.Sides (S).Prestige * 3 / 4);
+         elsif G.Sides (S).Control = Computer
+           and then G.Sides (Other (S)).Control = Human
+           and then D = Hard
+         then
+            --  Veteran opposition.
+            for U of G.Units loop
+               if U.Side = S then
+                  U.Experience := Natural'Min (Max_Experience,
+                                               U.Experience + 100);
+               end if;
+            end loop;
+         end if;
+      end loop;
+   end Apply_Difficulty;
 
    function Victory_Hexes_Total return Natural is
       N : Natural := 0;
@@ -1055,8 +1242,24 @@ package body Engine.Game is
    end Victory_Hexes_Owned;
 
    procedure Declare_Winner (S : Player_Side; Why : String) is
+      Total : constant Natural := Victory_Hexes_Total;
+      Held  : constant Natural := Victory_Hexes_Owned (G.Attacker);
    begin
       if G.Winner = 0 then
+         if Why = "enemy ground forces annihilated" then
+            G.Decisive := True;
+            G.Victory_Grade := To_Unbounded_String ("Decisive victory");
+         elsif S = G.Attacker then
+            G.Decisive := G.Turn <= (2 * G.Max_Turns + 2) / 3;
+            G.Victory_Grade := To_Unbounded_String
+              (if G.Decisive then "Decisive victory" else "Victory");
+         else
+            G.Decisive := Held = 0;
+            G.Victory_Grade := To_Unbounded_String
+              (if Held = 0 then "Decisive defensive victory"
+               elsif 2 * Held >= Total then "Narrow defensive victory"
+               else "Defensive victory");
+         end if;
          G.Winner := S;
          Log ("*** " & To_String (G.Sides (S).Name) & " wins: " & Why);
          declare

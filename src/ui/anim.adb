@@ -106,6 +106,18 @@ package body Anim is
       while not Queue.Is_Empty loop
          Current := Queue.First_Element;
          Queue.Delete_First;
+         if Enabled and then On_Focus /= null then
+            case Current.Kind is
+               when Fx_Move =>
+                  if Current.Len > 0 then
+                     On_Focus (Current.Path (Current.Len));
+                  end if;
+               when Fx_Combat | Fx_Destroyed | Fx_Capture | Fx_Deploy =>
+                  On_Focus (Current.To);
+               when Fx_Victory =>
+                  null;
+            end case;
+         end if;
          Sound_For (Current);
          Length := (if Enabled then Duration_Of (Current) else 0.0);
          if Length > 0.0 then

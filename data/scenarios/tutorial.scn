@@ -92,6 +92,11 @@ more  - Protect the flanks of your artillery; it is weak in close combat.
 more  - Keep a reserve, and pull battered units back to refit.
 more  - Watch the turn counter: an attack that is too slow fails too.
 hint turn=11 Only a few turns left! Push for the objectives now.
+hint event=reinforcements REINFORCEMENTS
+more
+more Fresh units have arrived at Camp Alpha. Scenarios can bring in
+more reinforcements on set turns - for you or for the enemy - so keep
+more an eye on the combat log at the start of each turn.
 map 16 10
 . . . . . . . ~ . . . . . . . .
 . . . . . f f ~ . . . . h h . .
@@ -109,6 +114,7 @@ place at=1,5 name=Camp_Alpha owner=1
 place at=1,8 name=Alpha_Field owner=1
 place at=9,4 name=Millbrook owner=2 victory
 place at=13,6 name=Eastwick owner=2 victory
+reinforce turn=5 side=1 type=medtank at=1,5
 unit side=1 type=armcar at=4,4
 unit side=1 type=infantry at=3,5
 unit side=1 type=infantry at=2,4

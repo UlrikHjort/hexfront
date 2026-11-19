@@ -35,6 +35,9 @@ place at=2,8 name=Albert owner=1
 place at=2,3 name=Hamel owner=1
 place at=0,5 name=Airfield owner=1
 place at=22,2 name=Airfield owner=2
+reinforce turn=8 side=1 type=infantry at=0,6
+reinforce turn=8 side=1 type=infantry at=0,8
+reinforce turn=8 side=1 type=tank at=1,6
 unit side=1 type=infantry at=5,1
 unit side=1 type=infantry at=6,3
 unit side=1 type=infantry at=6,5

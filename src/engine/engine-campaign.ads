@@ -4,6 +4,7 @@ with Ada.Strings.Unbounded;  use Ada.Strings.Unbounded;
 with Ada.Containers.Vectors;
 with Ada.Text_IO;
 with Engine.Loader;
+with Engine.Game;
 
 package Engine.Campaign is
 
@@ -16,6 +17,8 @@ package Engine.Campaign is
 
    type Stage is record
       Id, File, On_Win, On_Loss : Unbounded_String;
+      On_Decisive : Unbounded_String;   --  optional branch
+
    end record;
    package Stage_Vectors is new Ada.Containers.Vectors (Positive, Stage);
 
@@ -31,6 +34,7 @@ package Engine.Campaign is
       Carried     : Carried_Vectors.Vector;
       Fresh       : Boolean := True; --  first stage: use scenario forces
       Won, Lost   : Natural := 0;
+      Difficulty  : Engine.Game.Difficulty_Level := Engine.Game.Normal;
    end record;
 
    C : Campaign_State;

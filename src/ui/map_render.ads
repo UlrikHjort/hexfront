@@ -11,6 +11,12 @@ package Map_Render is
    Radius : constant Gdouble := 30.0;   --  hex corner radius in pixels
    Margin : constant Gdouble := 8.0;
 
+   --  Display zoom factor; all map geometry is in unzoomed units and the
+   --  whole drawing is scaled by Cairo.
+   Zoom     : Gdouble := 1.0;
+   Min_Zoom : constant Gdouble := 0.45;
+   Max_Zoom : constant Gdouble := 1.75;
+
    type View_State is record
       Selected    : Natural := 0;        --  selected unit
       Show_Reach  : Boolean := False;
@@ -24,10 +30,11 @@ package Map_Render is
    function Center_X (H : Hex) return Gdouble;
    function Center_Y (H : Hex) return Gdouble;
 
+   --  Size of the drawing area in screen pixels (zoom applied).
    procedure Map_Size (Width, Height : out Gint);
 
-   --  Hex under pixel (X, Y), or No_Hex.
-   function Hex_At (X, Y : Gdouble) return Hex;
+   --  Hex under screen pixel (X, Y), or No_Hex (zoom applied).
+   function Hex_At (SX, SY : Gdouble) return Hex;
 
    procedure Draw (Cr : Cairo.Cairo_Context; V : View_State);
 

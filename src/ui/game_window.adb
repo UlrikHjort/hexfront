@@ -15,6 +15,7 @@ with Gtk.Box;                 use Gtk.Box;
 with Gtk.Paned;               use Gtk.Paned;
 with Gtk.Drawing_Area;        use Gtk.Drawing_Area;
 with Gtk.Scrolled_Window;     use Gtk.Scrolled_Window;
+with Gtk.Adjustment;
 with Gtk.Label;               use Gtk.Label;
 with Gtk.Button;              use Gtk.Button;
 with Gtk.Frame;               use Gtk.Frame;
@@ -56,6 +57,7 @@ package body Game_Window is
 
    Win          : Gtk_Window;
    Area         : Gtk_Drawing_Area;
+   Map_Scroll   : Gtk_Scrolled_Window;
    Status_Label : Gtk_Label;
    Unit_Label   : Gtk_Label;
    Info_Label   : Gtk_Label;
@@ -65,6 +67,7 @@ package body Game_Window is
    Fog_Item     : Gtk_Check_Menu_Item;
    Fair_Item    : Gtk_Check_Menu_Item;
    Btn_Resupply, Btn_Reinforce, Btn_Buy, Btn_Next, Btn_End : Gtk_Button;
+   Btn_Undo     : Gtk_Button;
 
    View         : View_State;
    AI_Running   : Boolean := False;
@@ -234,6 +237,7 @@ package body Game_Window is
       if not G.Loaded then
          Status_Label.Set_Markup ("<b>No scenario loaded</b>" & ASCII.LF
                                   & "Game > New scenario / New campaign");
+         Btn_Undo.Set_Sensitive (False);
          Btn_Resupply.Set_Sensitive (False);
          Btn_Reinforce.Set_Sensitive (False);
          Btn_Buy.Set_Sensitive (False);
@@ -251,6 +255,7 @@ package body Game_Window is
          Btn_Resupply.Set_Sensitive (False);
          Btn_Reinforce.Set_Sensitive (False);
          Btn_Buy.Set_Sensitive (False);
+         Btn_Undo.Set_Sensitive (False);
          Btn_Next.Set_Sensitive (False);
          Btn_End.Set_Sensitive (False);
          return;
@@ -294,6 +299,7 @@ package body Game_Window is
          then "Reinforce (" & Img (Reinforce_Cost (Sel)) & ")"
          else "Reinforce");
       Btn_Buy.Set_Sensitive (Human_Turn);
+      Btn_Undo.Set_Sensitive (Human_Turn and then Can_Undo);
       Btn_Next.Set_Sensitive (Human_Turn);
       Btn_End.Set_Sensitive (Human_Turn);
    end Update_Panels;
@@ -409,7 +415,8 @@ package body Game_Window is
          Refresh;
          Show_Message
            (Message_Info,
-            To_String (G.Sides (G.Winner).Name) & " is victorious!"
+            To_String (G.Victory_Grade) & " for "
+            & To_String (G.Sides (G.Winner).Name) & "!"
             & ASCII.LF & ASCII.LF
             & "Objectives held by the attacker: "
             & Img (Victory_Hexes_Owned (G.Attacker)) & " of "
@@ -522,6 +529,50 @@ package body Game_Window is
       end if;
    end After_Battle;
 
+   ------------
+   -- Camera --
+   ------------
+
+   --  Scroll the map so that hex H is comfortably on screen.
+   procedure Ensure_Visible (H : Hex) is
+      Edge : constant Gdouble := 70.0;
+   begin
+      if H = No_Hex or else not In_Map (H) or else Map_Scroll = null then
+         return;
+      end if;
+      declare
+         HA : constant Gtk.Adjustment.Gtk_Adjustment :=
+           Map_Scroll.Get_Hadjustment;
+         VA : constant Gtk.Adjustment.Gtk_Adjustment :=
+           Map_Scroll.Get_Vadjustment;
+         X  : constant Gdouble := Center_X (H) * Zoom;
+         Y  : constant Gdouble := Center_Y (H) * Zoom;
+      begin
+         if X < HA.Get_Value + Edge
+           or else X > HA.Get_Value + HA.Get_Page_Size - Edge
+         then
+            HA.Set_Value (X - HA.Get_Page_Size / 2.0);
+         end if;
+         if Y < VA.Get_Value + Edge
+           or else Y > VA.Get_Value + VA.Get_Page_Size - Edge
+         then
+            VA.Set_Value (Y - VA.Get_Page_Size / 2.0);
+         end if;
+      end;
+   end Ensure_Visible;
+
+   procedure Set_Zoom (Z : Gdouble) is
+      W, H : Gint;
+   begin
+      Zoom := Gdouble'Max (Min_Zoom, Gdouble'Min (Max_Zoom, Z));
+      Map_Size (W, H);
+      Area.Set_Size_Request (W, H);
+      Area.Queue_Draw;
+      if View.Selected /= 0 and then Get (View.Selected).Alive then
+         Ensure_Visible (Get (View.Selected).Pos);
+      end if;
+   end Set_Zoom;
+
    -------------
    -- Actions --
    -------------
@@ -603,6 +654,7 @@ package body Game_Window is
               and then I /= Start
             then
                Select_Unit (I);
+               Ensure_Visible (U.Pos);
                return;
             end if;
          end;
@@ -627,6 +679,21 @@ package body Game_Window is
          After_Action;
       end if;
    end On_Reinforce;
+
+   procedure Do_Undo is
+   begin
+      if Human_Turn and then Can_Undo then
+         Undo_Move;
+         Recompute_Reach;
+         Refresh;
+      end if;
+   end Do_Undo;
+
+   procedure On_Undo (B : access Gtk_Button_Record'Class) is
+      pragma Unreferenced (B);
+   begin
+      Do_Undo;
+   end On_Undo;
 
    procedure On_Next (B : access Gtk_Button_Record'Class) is
       pragma Unreferenced (B);
@@ -836,7 +903,7 @@ package body Game_Window is
                return True;
             elsif View.Show_Reach and then Can_Move_To (Sel, View.Reach, H)
             then
-               Move_Unit (Sel, H, View.Reach);
+               Move_Unit_Undoable (Sel, H, View.Reach);
                After_Action;
                return True;
             end if;
@@ -864,6 +931,26 @@ package body Game_Window is
       return True;
    end On_Motion;
 
+   --  Ctrl + mouse wheel zooms; plain wheel scrolls the map as usual.
+   function On_Scroll (W : access Gtk_Widget_Record'Class;
+                       Event : Gdk_Event_Scroll) return Boolean is
+      pragma Unreferenced (W);
+   begin
+      if (Event.State and Control_Mask) = 0 then
+         return False;
+      end if;
+      if Event.Direction = Scroll_Up
+        or else (Event.Direction = Scroll_Smooth and then Event.Delta_Y < 0.0)
+      then
+         Set_Zoom (Zoom * 1.1);
+      elsif Event.Direction = Scroll_Down
+        or else (Event.Direction = Scroll_Smooth and then Event.Delta_Y > 0.0)
+      then
+         Set_Zoom (Zoom / 1.1);
+      end if;
+      return True;
+   end On_Scroll;
+
    function On_Key (W : access Gtk_Widget_Record'Class;
                     Event : Gdk_Event_Key) return Boolean is
       pragma Unreferenced (W);
@@ -874,10 +961,24 @@ package body Game_Window is
       elsif Event.Keyval = GDK_Escape then
          Select_Unit (0);
          return True;
+      elsif Event.Keyval in GDK_plus | GDK_equal | GDK_KP_Add then
+         Set_Zoom (Zoom * 1.15);
+         return True;
+      elsif Event.Keyval in GDK_minus | GDK_KP_Subtract then
+         Set_Zoom (Zoom / 1.15);
+         return True;
+      elsif Event.Keyval = GDK_0 then
+         Set_Zoom (1.0);
+         return True;
       elsif Event.Keyval = GDK_LC_e
         and then (Event.State and Control_Mask) /= 0
       then
          Do_End_Turn;
+         return True;
+      elsif Event.Keyval = GDK_LC_z
+        and then (Event.State and Control_Mask) /= 0
+      then
+         Do_Undo;
          return True;
       end if;
       return False;
@@ -888,6 +989,7 @@ package body Game_Window is
    -----------------------
 
    type Play_Mode is (Play_Side_1, Play_Side_2, Hot_Seat, Watch);
+   Chosen_Difficulty : Difficulty_Level := Normal;
 
    procedure Start_Scenario (Path : String; Mode : Play_Mode) is
    begin
@@ -898,6 +1000,7 @@ package body Game_Window is
         (if Mode in Play_Side_1 | Hot_Seat then Human else Computer);
       G.Sides (2).Control :=
         (if Mode in Play_Side_2 | Hot_Seat then Human else Computer);
+      Apply_Difficulty (Chosen_Difficulty);
       --  Turn-1 hints were queued for the scenario's default players.
       if G.Sides (G.Current).Control /= Human then
          Pending_Hints.Clear;
@@ -960,6 +1063,7 @@ package body Game_Window is
       Dlg    : Gtk_Dialog;
       Combo  : Gtk_Combo_Box_Text;
       Mode_C : Gtk_Combo_Box_Text;
+      Diff_C : Gtk_Combo_Box_Text;
       Dummy  : Gtk_Widget;
       Resp   : Gtk_Response_Type;
    begin
@@ -1000,6 +1104,12 @@ package body Game_Window is
          Mode_C.Set_Active (0);
          Dlg.Get_Content_Area.Pack_Start (Mode_C, False, False, 0);
       end if;
+      Gtk_New (Diff_C);
+      Diff_C.Append_Text ("Easy - more prestige, weaker opposition");
+      Diff_C.Append_Text ("Normal");
+      Diff_C.Append_Text ("Hard - less prestige, veteran enemy");
+      Diff_C.Set_Active (Gint (Difficulty_Level'Pos (Chosen_Difficulty)));
+      Dlg.Get_Content_Area.Pack_Start (Diff_C, False, False, 0);
       Dummy := Dlg.Add_Button ("Cancel", Gtk_Response_Cancel);
       Dummy := Dlg.Add_Button ("Start", Gtk_Response_Accept);
       Dlg.Set_Default_Response (Gtk_Response_Accept);
@@ -1010,6 +1120,8 @@ package body Game_Window is
       In_Dialog := False;
       if Resp = Gtk_Response_Accept and then Combo.Get_Active >= 0 then
          Index := Natural (Combo.Get_Active) + 1;
+         Chosen_Difficulty := Difficulty_Level'Val
+           (Integer'Max (0, Integer (Diff_C.Get_Active)));
          if With_Mode then
             Mode := Play_Mode'Val (Integer'Max (0,
                                    Integer (Mode_C.Get_Active)));
@@ -1048,6 +1160,7 @@ package body Game_Window is
       Choose ("New campaign", False, I, M);
       if I /= 0 then
          Stop_AI;
+         Engine.Campaign.C.Difficulty := Chosen_Difficulty;
          Engine.Campaign.Load_Campaign (To_String (Desc_List (I).Path));
          Engine.Campaign.Start_Stage;
          New_Game_Started;
@@ -1167,8 +1280,11 @@ package body Game_Window is
      & "The attacker must capture every objective (gold-ringed hex) "
      & "before the turn limit; the defender wins by holding one."
      & ASCII.LF & ASCII.LF
-     & "Keys: N / Space = next unit, Esc = deselect, Ctrl+E = end turn. "
-     & "Right-click deselects or cancels.";
+     & "Keys: N / Space = next unit, Esc = deselect, Ctrl+E = end turn, "
+     & "Ctrl+Z = undo move, + / - / 0 = zoom (also Ctrl+mouse wheel). "
+     & "Right-click deselects or cancels." & ASCII.LF & ASCII.LF
+     & "A unit with no way out (all neighbours enemy-held, impassable or in "
+     & "an enemy zone of control) is SURROUNDED: defence -2 and no supply.";
 
    procedure On_New (M : access Gtk_Menu_Item_Record'Class) is
       pragma Unreferenced (M);
@@ -1252,6 +1368,35 @@ package body Game_Window is
    begin
       Anim.Enabled := M.Get_Active;
    end On_Animate;
+
+   procedure On_Zoom_In (M : access Gtk_Menu_Item_Record'Class) is
+      pragma Unreferenced (M);
+   begin
+      Set_Zoom (Zoom * 1.15);
+   end On_Zoom_In;
+
+   procedure On_Zoom_Out (M : access Gtk_Menu_Item_Record'Class) is
+      pragma Unreferenced (M);
+   begin
+      Set_Zoom (Zoom / 1.15);
+   end On_Zoom_Out;
+
+   procedure On_Zoom_Reset (M : access Gtk_Menu_Item_Record'Class) is
+      pragma Unreferenced (M);
+   begin
+      Set_Zoom (1.0);
+   end On_Zoom_Reset;
+
+   procedure On_Zoom_Fit (M : access Gtk_Menu_Item_Record'Class) is
+      pragma Unreferenced (M);
+      W, H : Gint;
+   begin
+      Zoom := 1.0;
+      Map_Size (W, H);
+      Set_Zoom (Gdouble'Min
+                  (Gdouble (Map_Scroll.Get_Allocated_Width) / Gdouble (W),
+                   Gdouble (Map_Scroll.Get_Allocated_Height) / Gdouble (H)));
+   end On_Zoom_Fit;
 
    procedure On_Quit (M : access Gtk_Menu_Item_Record'Class) is
       pragma Unreferenced (M);
@@ -1372,6 +1517,15 @@ package body Game_Window is
       Menu.Append (Sep);
       Add ("_Quit", On_Quit'Access);
 
+      Gtk_New_With_Mnemonic (Item, "_View");
+      Bar.Append (Item);
+      Gtk_New (Menu);
+      Item.Set_Submenu (Menu);
+      Add ("Zoom _in   (+)", On_Zoom_In'Access);
+      Add ("Zoom _out   (-)", On_Zoom_Out'Access);
+      Add ("_Normal size   (0)", On_Zoom_Reset'Access);
+      Add ("_Fit map to window", On_Zoom_Fit'Access);
+
       Gtk_New_With_Mnemonic (Item, "_Help");
       Bar.Append (Item);
       Gtk_New (Menu);
@@ -1383,10 +1537,13 @@ package body Game_Window is
 
       --  Map
       Gtk_New (Scroll);
+      Map_Scroll := Scroll;
       Scroll.Set_Policy (Policy_Automatic, Policy_Automatic);
       Gtk_New (Area);
       Area.Set_Size_Request (400, 300);
-      Area.Add_Events (Button_Press_Mask or Pointer_Motion_Mask);
+      Area.Add_Events (Button_Press_Mask or Pointer_Motion_Mask
+                       or Scroll_Mask or Smooth_Scroll_Mask);
+      Area.On_Scroll_Event (On_Scroll'Access);
       Area.On_Draw (On_Draw'Access);
       Area.On_Button_Press_Event (On_Click'Access);
       Area.On_Motion_Notify_Event (On_Motion'Access);
@@ -1425,10 +1582,13 @@ package body Game_Window is
       Panel.Pack_Start (Buttons, False, False, 0);
 
       Gtk_New_Hbox (Buttons, True, 4);
+      Gtk_New (Btn_Undo, "Undo move");
+      Btn_Undo.On_Clicked (On_Undo'Access);
       Gtk_New (Btn_Next, "Next unit");
       Btn_Next.On_Clicked (On_Next'Access);
       Gtk_New (Btn_End, "End turn");
       Btn_End.On_Clicked (On_End'Access);
+      Buttons.Pack_Start (Btn_Undo);
       Buttons.Pack_Start (Btn_Next);
       Buttons.Pack_Start (Btn_End);
       Panel.Pack_Start (Buttons, False, False, 0);
@@ -1457,6 +1617,7 @@ package body Game_Window is
 
       Anim.On_Redraw := Anim_Redraw'Access;
       Anim.On_Done   := Anim_Finished'Access;
+      Anim.On_Focus  := Ensure_Visible'Access;
       Update_Panels;
       Win.Show_All;
       Id := Glib.Main.Idle_Add (Startup'Access);

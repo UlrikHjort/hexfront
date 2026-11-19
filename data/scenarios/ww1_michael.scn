@@ -34,6 +34,7 @@ place at=8,4 name=Bapaume owner=2 victory
 place at=3,8 name=Albert owner=2 victory
 place at=14,6 name=Epehy owner=2
 place at=2,2 name=Airfield owner=2
+reinforce turn=6 side=1 type=storm at=25,7
 unit side=1 type=storm at=20,2 core
 unit side=1 type=storm at=20,5 core
 unit side=1 type=storm at=20,8 core
