@@ -4,6 +4,7 @@ with Cairo;
 with Glib;          use Glib;
 with Engine;
 with Engine.Units;
+with Engine.Hexes;
 
 package Anim is
 
@@ -12,6 +13,9 @@ package Anim is
    type Callback is access procedure;
    On_Redraw : Callback;   --  queue a redraw of the map
    On_Done   : Callback;   --  queue drained
+
+   type Focus_Callback is access procedure (H : Engine.Hexes.Hex);
+   On_Focus  : Focus_Callback;   --  bring a hex into view
 
    --  Take new effects from Engine.Game.Effects; Viewer filters out what
    --  the human player could not see (0 = show everything).

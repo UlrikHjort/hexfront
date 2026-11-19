@@ -67,6 +67,20 @@ package Engine.Game is
    end record;
    package Hint_Vectors is new Ada.Containers.Vectors (Positive, Hint);
 
+   --  Units scheduled to arrive at the start of a side's turn.
+   type Reinforcement is record
+      Turn : Positive    := 1;
+      Side : Player_Side := 1;
+      Kind : Positive    := 1;
+      Pos  : Hex         := No_Hex;
+      Core : Boolean     := False;
+      Done : Boolean     := False;
+   end record;
+   package Reinf_Vectors is new Ada.Containers.Vectors
+     (Positive, Reinforcement);
+
+   type Difficulty_Level is (Easy, Normal, Hard);
+
    type Game_State is record
       Loaded        : Boolean := False;
       Scenario_Path : Unbounded_String;
@@ -83,6 +97,10 @@ package Engine.Game is
       Types         : Type_Vectors.Vector;
       Units         : Unit_Vectors.Vector;
       Hints         : Hint_Vectors.Vector;
+      Reinforcements : Reinf_Vectors.Vector;
+      Difficulty    : Difficulty_Level := Normal;
+      Victory_Grade : Unbounded_String;  --  e.g. "Decisive victory"
+      Decisive      : Boolean := False;
       Turn          : Positive    := 1;
       Max_Turns     : Positive    := 10;
       First         : Player_Side := 1;
@@ -206,6 +224,12 @@ package Engine.Game is
    --  move (ambush). Returns the hex actually reached.
    procedure Move_Unit (U : Unit_Index; To : Hex; R : Reach_Map);
 
+   --  Human moves: like Move_Unit, but the move can be taken back if it
+   --  revealed nothing (no new enemy seen, no capture, no ambush).
+   procedure Move_Unit_Undoable (U : Unit_Index; To : Hex; R : Reach_Map);
+   function Can_Undo return Boolean;
+   procedure Undo_Move;
+
    ------------
    -- Combat --
    ------------
@@ -262,6 +286,10 @@ package Engine.Game is
    procedure Remove_Unit (U : Unit_Index);   --  silently, e.g. campaign
    procedure Place_Occupants;                --  rebuild from unit list
    procedure Start_Game;
+
+   --  Adjust prestige/experience for the chosen difficulty. Call once,
+   --  after the human/computer sides are set.
+   procedure Apply_Difficulty (D : Difficulty_Level);
    procedure End_Turn;
    procedure Check_Victory;
 

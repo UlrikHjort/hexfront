@@ -34,6 +34,7 @@ place at=9,11 name=Cassel owner=1
 place at=17,11 name=Ypres owner=1
 place at=12,12 name=Airfield owner=1
 place at=3,3 name=Airfield owner=2
+reinforce turn=5 side=1 type=heavyart at=12,13
 unit side=1 type=medtank at=8,10 core
 unit side=1 type=medtank at=14,10 core
 unit side=1 type=lighttank at=11,11 core

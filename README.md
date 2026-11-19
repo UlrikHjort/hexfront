@@ -27,6 +27,13 @@ scenarios defined in plain text data files.
   threats to its own objectives
 * Campaign HQ between battles: re-equip veteran core units with better
   models of the same class, paid with prestige
+* Camera follows the action; zoom with + / - / 0, Ctrl+mouse wheel or the
+  View menu ("Fit map to window")
+* Scheduled reinforcements (`reinforce turn= side= type= at=c,r [core]`)
+* Difficulty levels (Easy / Normal / Hard) for scenarios and campaigns
+* Graded results (decisive / normal / narrow); decisive campaign wins give
+  bonus prestige and may branch (`stage ... decisive=<id>`)
+* Undo the last move (Ctrl+Z) when it revealed nothing new
 * Built-in scenario editor (Game > Scenario editor): paint terrain, place
   units, towns and objectives, set up sides, save and play-test
 

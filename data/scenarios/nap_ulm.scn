@@ -35,6 +35,8 @@ place at=10,14 name=Memmingen owner=2 victory
 place at=21,1 name=Nordlingen owner=1
 place at=4,2 name=Aalen owner=1
 place at=24,10 name=Augsburg owner=1
+reinforce turn=7 side=1 type=line at=24,9
+reinforce turn=7 side=1 type=footart at=25,10
 unit side=1 type=line at=5,3 core
 unit side=1 type=line at=8,3 core
 unit side=1 type=line at=11,2 core

@@ -23,12 +23,15 @@ package body Map_Render is
 
    procedure Map_Size (Width, Height : out Gint) is
    begin
-      Width  := Gint (2.0 * Margin + Radius * 2.0
-                      + Gdouble (Integer'Max (G.Cols - 1, 0)) * 1.5 * Radius);
-      Height := Gint (2.0 * Margin + Hex_H * (Gdouble (G.Rows) + 0.5));
+      Width  := Gint (Zoom * (2.0 * Margin + Radius * 2.0
+                      + Gdouble (Integer'Max (G.Cols - 1, 0)) * 1.5 * Radius));
+      Height := Gint (Zoom * (2.0 * Margin
+                              + Hex_H * (Gdouble (G.Rows) + 0.5)));
    end Map_Size;
 
-   function Hex_At (X, Y : Gdouble) return Hex is
+   function Hex_At (SX, SY : Gdouble) return Hex is
+      X : constant Gdouble := SX / Zoom;
+      Y : constant Gdouble := SY / Zoom;
       Approx : constant Integer :=
         Integer (Gdouble'Floor ((X - Margin - Radius) / (1.5 * Radius) + 0.5));
       Best   : Hex := No_Hex;
@@ -492,6 +495,7 @@ package body Map_Render is
       if not G.Loaded then
          return;
       end if;
+      Scale (Cr, Zoom, Zoom);
 
       --  Terrain
       for C in 0 .. G.Cols - 1 loop

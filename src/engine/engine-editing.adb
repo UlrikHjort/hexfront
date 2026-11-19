@@ -272,6 +272,13 @@ package body Engine.Editing is
          end;
       end loop;
 
+      for R of G.Reinforcements loop
+         Put_Line (F, "reinforce turn=" & Image (R.Turn)
+                   & " side=" & Image (Integer (R.Side))
+                   & " type=" & To_String (G.Types (R.Kind).Id)
+                   & " at=" & Image (R.Pos)
+                   & (if R.Core then " core" else ""));
+      end loop;
       for U of G.Units loop
          if U.Alive then
             Put_Line (F, "unit side=" & Image (Integer (U.Side))

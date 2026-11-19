@@ -42,7 +42,15 @@ package body Engine.Save is
       Put_Line (F, "state turn=" & Image (G.Turn)
                 & " current=" & Image (Integer (G.Current))
                 & " winner=" & Image (Integer (G.Winner))
-                & " fog=" & B (G.Fog) & " fair=" & B (G.Fair_AI));
+                & " fog=" & B (G.Fog) & " fair=" & B (G.Fair_AI)
+                & " difficulty="
+                & Image (Difficulty_Level'Pos (G.Difficulty)));
+      for I in G.Reinforcements.First_Index .. G.Reinforcements.Last_Index
+      loop
+         if G.Reinforcements (I).Done then
+            Put_Line (F, "reinf_done n=" & Image (I));
+         end if;
+      end loop;
       for S in Player_Side loop
          Put_Line (F, "side n=" & Image (Integer (S))
                    & " control="
@@ -126,6 +134,19 @@ package body Engine.Save is
                G.Winner  := Side_Id (Int (Line, "winner", 0));
                G.Fog     := Int (Line, "fog", 1) = 1;
                G.Fair_AI := Int (Line, "fair", 1) = 1;
+               G.Difficulty := Difficulty_Level'Val
+                 (Integer'Max
+                    (0, Integer'Min (2, Int (Line, "difficulty", 1))));
+            elsif KW = "reinf_done" then
+               declare
+                  N : constant Integer := Int (Line, "n", 0);
+               begin
+                  if N in G.Reinforcements.First_Index
+                          .. G.Reinforcements.Last_Index
+                  then
+                     G.Reinforcements (N).Done := True;
+                  end if;
+               end;
             elsif KW = "side" then
                declare
                   S : constant Player_Side := Player_Side (Int (Line, "n", 1));

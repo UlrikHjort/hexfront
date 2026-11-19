@@ -8,6 +8,7 @@ attacker 1
 first 1
 side 1 name=Grande_Armee color=50,70,160 control=human prestige=250 income=25
 side 2 name=Allied_Army color=40,120,60 control=ai prestige=60 income=10
+hint turn=6 Marshal Davout's corps arrives from the south after a forced march!
 map 24 16
 . . . . . . . . ~ . f . . . . . . f . . . . f .
 . . . . . . . . ~ . . . . f . . . . . . . . . .
@@ -35,6 +36,9 @@ place at=8,10 name=Sokolnitz owner=2
 place at=22,9 name=Austerlitz owner=2 victory
 place at=2,9 name=Turas owner=1
 place at=3,2 name=Santon owner=1
+reinforce turn=6 side=1 type=line at=2,14
+reinforce turn=6 side=1 type=line at=3,15
+reinforce turn=6 side=1 type=dragoons at=1,13
 unit side=1 type=line at=6,4 core
 unit side=1 type=line at=6,6 core
 unit side=1 type=line at=7,8 core

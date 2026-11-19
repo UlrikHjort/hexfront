@@ -486,6 +486,21 @@ package body Engine.Loader is
                            C.Victory := Has_Key (L, "victory");
                         end;
                      end;
+                  elsif KW = "reinforce" then
+                     --  reinforce turn=N side=S type=T at=c,r [core]
+                     declare
+                        R : Reinforcement;
+                     begin
+                        R.Turn := Int (L, "turn", 1);
+                        R.Side := Player_Side (Int (L, "side", 1));
+                        R.Kind := Need_Type (Value (L, "type"));
+                        R.Pos  := Parse_Hex (Value (L, "at"));
+                        R.Core := Has_Key (L, "core");
+                        if not In_Map (R.Pos) then
+                           Fail ("reinforcement outside map");
+                        end if;
+                        G.Reinforcements.Append (R);
+                     end;
                   elsif KW = "unit" then
                      declare
                         U : Unit;

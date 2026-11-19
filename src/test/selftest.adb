@@ -11,6 +11,8 @@ with Engine.Save;
 with Engine.Campaign;
 with Engine.Editing;
 with Engine.Terrain;
+with Engine.Units;
+with Engine.Hexes;              use type Engine.Hexes.Hex;
 
 procedure Selftest is
    Verbose : constant Boolean :=
@@ -80,6 +82,55 @@ begin
                    & Wins (I, 1)'Image & " of" & Rounds'Image);
       end loop;
    end if;
+
+   --  Undo: a quiet move can be taken back exactly.
+   declare
+      R      : Reach_Map;
+      Before : Engine.Units.Unit;
+      Target : Engine.Hexes.Hex := Engine.Hexes.No_Hex;
+   begin
+      Load_Scenario (To_String (List.First_Element.Path));
+      G.Sides (1).Control := Human;
+      G.Sides (2).Control := Computer;
+      Before := G.Units (1);
+      Compute_Reach (1, R);
+      for C in 0 .. G.Cols - 1 loop
+         for Rw in 0 .. G.Rows - 1 loop
+            if Target = Engine.Hexes.No_Hex and then Can_Move_To (1, R, (C, Rw))
+              and then R.Cost (C, Rw) = 1
+            then
+               Target := (C, Rw);
+            end if;
+         end loop;
+      end loop;
+      Move_Unit_Undoable (1, Target, R);
+      declare
+         Could : constant Boolean := Can_Undo;
+      begin
+         Undo_Move;
+         Put_Line ("undo: possible=" & Could'Image & ", restored="
+                   & Boolean'Image (G.Units (1).Pos = Before.Pos
+                                    and then G.Units (1).Moves_Left
+                                             = Before.Moves_Left
+                                    and then Unit_At (Before.Pos) = 1));
+      end;
+   end;
+
+   --  Reinforcements arrive.
+   declare
+      Arrivals : Natural := 0;
+   begin
+      for Info of List loop
+         Load_Scenario (To_String (Info.Path));
+         Play_Out;
+         for R of G.Reinforcements loop
+            if R.Done then
+               Arrivals := Arrivals + 1;
+            end if;
+         end loop;
+      end loop;
+      Put_Line ("reinforcements arrived:" & Arrivals'Image);
+   end;
 
    --  Save / load round trip.
    declare
