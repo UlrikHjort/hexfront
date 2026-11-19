@@ -7,6 +7,9 @@ era ww2
 turns 14
 attacker 1
 first 1
+climate temperate
+weather turn=1 fair
+weather turn=2 fair
 side 1 name=Wehrmacht color=96,104,88 control=human prestige=150 income=30
 side 2 name=Allied_Forces color=150,110,60 control=ai prestige=80 income=15
 map 24 14

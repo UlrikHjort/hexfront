@@ -25,11 +25,15 @@ def write(name, header, m, territory, places, units, extra=()):
     vehicles = ("tank", "medtank", "lighttank", "heavytank", "armcar", "atgun", "fieldart",
                 "heavyart", "flak")
     air = ("fighter", "divebomb", "medbomb", "scout", "biplane")
+    naval = ("battleship", "cruiser", "destroyer")
     for side, t, c, r, opt in units:
         g = m.get(c, r)
         if t in air:
             continue
-        bad = g == 'w' or (t in vehicles and g in '~sM')
+        if t in naval:
+            bad = g != 'w'
+        else:
+            bad = g == 'w' or (t in vehicles and g in '~sM')
         if bad:
             raise SystemExit(f"{name}: {t} at {c},{r} stands on '{g}'")
     # places may change glyphs: re-dump map
@@ -179,6 +183,22 @@ hdr += ["hint event=reinforcements REINFORCEMENTS",
         "more Fresh units have arrived at Camp Alpha. Scenarios can bring in",
         "more reinforcements on set turns - for you or for the enemy - so keep",
         "more an eye on the combat log at the start of each turn."]
+hdr += ["weather turn=6 rain", "weather turn=7 overcast",
+        "hint event=weather WEATHER",
+        "more",
+        "more The weather has changed - see the status panel at the top right. Rain,",
+        "more snow and fog GROUND ALL AIRCRAFT. Mud slows vehicles and horses off",
+        "more the roads, and bad weather shortens how far your units can see.",
+        "more The forecast tells you what tomorrow brings: plan around it.",
+        "hint turn=8 SUPPLY LINES",
+        "more",
+        "more Supply flows from your towns and airfields and from your own edge of",
+        "more the map (here: the west). It cannot pass enemy units or the hexes",
+        "more next to them. Press S (or View > Show supply lines) to see it:",
+        "more amber = low supply, red = cut off.",
+        "more",
+        "more Units cut off fight worse, cannot resupply and lose strength every",
+        "more turn. Cutting the enemy off is as good as beating him!"]
 write("tutorial.scn", hdr, m, [(1, 0, 4), (2, 5, 15)], places, units,
       extra=R(5, 1, [("medtank", 1, 5)]))
 
@@ -247,7 +267,7 @@ hdr = ["title Dash to the Channel (1940)",
        "description The front is broken. Race west to the sea and cut the allied armies",
        "description in two: take Arras, Amiens, Abbeville and the port of Boulogne.",
        "description Expect an armoured counter-attack around Arras. 18 turns.",
-       "era ww2", "turns 18", "attacker 1", "first 1",
+       "era ww2", "turns 18", "attacker 1", "first 1", "climate temperate",
        "side 1 name=Wehrmacht color=96,104,88 control=human prestige=100 income=30",
        "side 2 name=Allied_Forces color=150,110,60 control=ai prestige=100 income=15"]
 units = core([(26, 6), (26, 8), (27, 5), (27, 9), (28, 7), (24, 7), (25, 5), (25, 9), (24, 3), (24, 11),
@@ -286,7 +306,8 @@ hdr = ["title The Dunkirk Perimeter (1940)",
        "description Break the canal line and take Dunkirk, Bergues, Furnes and Nieuport",
        "description before they slip away. The polders are boggy and the defenders",
        "description are dug in. 14 turns.",
-       "era ww2", "turns 14", "attacker 1", "first 1",
+       "era ww2", "turns 14", "attacker 1", "first 1", "climate temperate",
+       "weather turn=1 fair", "weather turn=2 fair",
        "side 1 name=Wehrmacht color=96,104,88 control=human prestige=150 income=30",
        "side 2 name=Allied_Forces color=150,110,60 control=ai prestige=80 income=15"]
 units = core([(8, 10), (14, 10), (11, 11), (16, 10), (12, 10), (6, 10), (4, 10), (10, 9), (15, 9), (19, 8),
@@ -324,7 +345,8 @@ hdr = ["title The Big Push (1916)",
        "description Summer 1916. After a week of bombardment the infantry goes over the",
        "description top. Break the first trench system, seize the fortified villages and",
        "description open the road to Bapaume. Wire, machine guns and deep dugouts await. 18 turns.",
-       "era ww1", "turns 18", "attacker 1", "first 1",
+       "era ww1", "turns 18", "attacker 1", "first 1", "climate temperate",
+       "weather turn=1 fair",
        "side 1 name=British_Army color=150,120,70 control=human prestige=300 income=50",
        "side 2 name=German_Army color=110,120,130 control=ai prestige=60 income=10"]
 units = U(1, [("infantry", 5, 1), ("infantry", 6, 3), ("infantry", 6, 5), ("infantry", 6, 7), ("infantry", 6, 9),
@@ -362,7 +384,8 @@ hdr = ["title Austerlitz (1805)",
        "description December 1805. The allied army has weakened its centre to strike at",
        "description your right along the Goldbach. Storm the Pratzen heights, split their",
        "description army and march on Austerlitz itself. 14 turns.",
-       "era napoleonic", "turns 14", "attacker 1", "first 1",
+       "era napoleonic", "turns 14", "attacker 1", "first 1", "climate temperate",
+       "weather turn=1 fog", "weather turn=2 fair", "weather turn=3 fair",
        "side 1 name=Grande_Armee color=50,70,160 control=human prestige=250 income=25",
        "side 2 name=Allied_Army color=40,120,60 control=ai prestige=60 income=10"]
 units = U(1, [("line", 6, 4), ("line", 6, 6), ("line", 7, 8), ("line", 7, 11), ("line", 6, 13), ("light", 5, 2),
@@ -399,7 +422,7 @@ hdr = ["title Ulm: The Encirclement (1805)",
        "description the west, your corps have swung around its flank to the north and",
        "description east. Close the ring: take Elchingen, Gunzburg and Memmingen and",
        "description force the fortress of Ulm before the Russians arrive. 14 turns.",
-       "era napoleonic", "turns 14", "attacker 1", "first 1",
+       "era napoleonic", "turns 14", "attacker 1", "first 1", "climate wet",
        "side 1 name=Grande_Armee color=50,70,160 control=human prestige=200 income=20",
        "side 2 name=Austrian_Army color=225,225,215 control=ai prestige=150 income=20"]
 units = U(1, [("line", 5, 3), ("line", 8, 3), ("line", 11, 2), ("line", 14, 2), ("line", 18, 2), ("line", 22, 4),
@@ -435,7 +458,8 @@ hdr = ["title Operation Michael (1918)",
        "description line in thick morning fog. New infiltration tactics let assault troops",
        "description bypass strongpoints: break through and take Ham, Peronne, Bapaume",
        "description and Albert. 16 turns.",
-       "era ww1", "turns 16", "attacker 1", "first 1",
+       "era ww1", "turns 16", "attacker 1", "first 1", "climate temperate",
+       "weather turn=1 fog", "weather turn=2 overcast",
        "side 1 name=German_Army color=110,120,130 control=human prestige=250 income=40",
        "side 2 name=British_Army color=150,120,70 control=ai prestige=40 income=8"]
 ger = [("storm", 20, 2), ("storm", 20, 5), ("storm", 20, 8), ("storm", 20, 11), ("infantry", 21, 3),
@@ -474,7 +498,7 @@ hdr = ["title Drive on the Marne (1918)",
        "description Dames ridge. Storm the heights, cross the Aisne and the Vesle and",
        "description reach the Marne at Chateau-Thierry. Take Soissons and Fismes on the",
        "description way. 18 turns.",
-       "era ww1", "turns 18", "attacker 1", "first 1",
+       "era ww1", "turns 18", "attacker 1", "first 1", "climate fair",
        "side 1 name=German_Army color=110,120,130 control=human prestige=150 income=40",
        "side 2 name=Allied_Army color=165,135,75 control=ai prestige=40 income=10"]
 gpos = [(3, 2), (6, 2), (9, 2), (12, 2), (15, 2), (18, 2), (4, 1), (8, 1), (13, 1), (17, 1), (20, 2), (21, 1),
@@ -488,10 +512,297 @@ units += U(2, [("fieldgun", 9, 6), ("fieldgun", 17, 6), ("infantry", 4, 8), ("in
                ("infantry", 8, 12), ("mg", 9, 12), ("tank", 12, 12), ("cavalry", 6, 11), ("howitzer", 16, 12),
                ("infantry", 20, 11), ("aagun", 13, 9)])
 units += U(2, [("scout", 16, 15)])
-hdr += ["hint turn=10 American divisions are arriving at Chateau-Thierry!",
+hdr += ["hint turn=7 A second wave of assault divisions is moving up behind the ridge.",
+        "hint turn=10 American divisions are arriving at Chateau-Thierry!",
         "more Fresh troops will stiffen the Allied line on the Marne - push hard."]
 write("ww1_marne.scn", hdr, m, [(2, 0, 23)], places, units,
-      extra=R(10, 2, [("infantry", 8, 15), ("mg", 7, 15)]))
+      extra=R(10, 2, [("infantry", 8, 15), ("mg", 7, 15)])
+      + R(7, 1, [("storm", 11, 0), ("storm", 13, 0), ("fieldgun", 12, 1)]))
+
+# =====================================================================
+# WW2: Normandy Beachhead (Crusade in Europe stage 1) - landing from the sea
+# =====================================================================
+m = Map(28, 16)
+m.rect(0, 0, 27, 3, 'w')
+m.scatter(0, 6, 27, 15, 'f', 0.30, 81)            # bocage hedgerows
+m.scatter(0, 6, 27, 15, 'h', 0.10, 82)
+m.rect(0, 4, 27, 4, '.')                           # the beaches
+m.scatter(0, 5, 6, 9, 's', 0.45, 83)               # flooded marshes behind Utah
+m.path([(4, 4), (3, 9), (5, 15)], '~')             # Douve
+m.path([(8, 4), (9, 10), (11, 15)], '~')           # Vire
+m.path([(22, 4), (23, 9), (22, 15)], '~')          # Orne
+m.path([(1, 6), (3, 8), (7, 6), (14, 8), (20, 9), (23, 11), (27, 11)], '=', keep='~')
+m.path([(14, 8), (12, 12), (10, 14)], '=', keep='~')
+m.path([(13, 4), (14, 8)], '=', keep='')
+m.path([(23, 11), (24, 15)], '=', keep='~')
+places = [(3, 8, 't', 'Carentan', 2, True), (7, 6, 't', 'Isigny', 2, False), (14, 8, 't', 'Bayeux', 2, True),
+          (23, 11, 'C', 'Caen', 2, True), (10, 14, 'C', 'St_Lo', 2, True), (19, 12, 't', 'Tilly', 2, False),
+          (1, 6, 't', 'Ste-Mere-Eglise', 1, False), (13, 4, 't', 'Arromanches', 1, False),
+          (17, 5, 'A', 'Landing_Strip', 1, False), (26, 14, 'A', 'Carpiquet', 2, False)]
+hdr = ["title Normandy Beachhead (1944)",
+       "description June 1944. The greatest seaborne invasion in history has put your",
+       "description divisions ashore on five beaches, with battleships and cruisers in",
+       "description support. Push inland through the hedgerow country and take Carentan,",
+       "description Bayeux, Caen and St-Lo before the panzer reserves seal the beachhead.",
+       "description Supply comes over the beaches: keep your ports and strip. 16 turns.",
+       "era ww2", "turns 16", "attacker 1", "first 1", "climate temperate",
+       "weather turn=1 overcast", "weather turn=2 overcast", "weather turn=9 rain", "weather turn=10 rain",
+       "supply side=1 edge=none", "supply side=2 edge=south",
+       "side 1 name=Allied_Forces color=175,150,95 control=human prestige=200 income=25",
+       "side 2 name=Wehrmacht color=96,104,88 control=ai prestige=150 income=30",
+       "hint turn=1 THE LANDINGS",
+       "more",
+       "more Your warships can only sail on water, but their big guns reach several",
+       "more hexes inland: use them to crack the coastal bunkers before the infantry",
+       "more goes in. Ships replenish next to a friendly port such as Arromanches.",
+       "more There is no friendly map edge here: all supply comes through the",
+       "more ports and the landing strip, so do not let them fall.",
+       "hint turn=9 A summer gale is lashing the Channel - the air forces are grounded."]
+ALLIED_GROUND = ["infantry", "infantry", "infantry", "infantry", "infantry", "infantry", "pioneers",
+                 "pioneers", "medtank", "medtank", "medtank", "armcar", "fieldart", "fieldart", "atgun",
+                 "infantry"]
+ALLIED_AIR = ["fighter", "fighter", "divebomb"]
+
+
+def allied_core(ground_pos, air_pos):
+    assert len(ground_pos) == len(ALLIED_GROUND) and len(air_pos) == len(ALLIED_AIR)
+    return ([(1, t, c, r, "core") for t, (c, r) in zip(ALLIED_GROUND, ground_pos)] +
+            [(1, t, c, r, "core") for t, (c, r) in zip(ALLIED_AIR, air_pos)])
+
+
+units = allied_core([(2, 4), (3, 4), (9, 4), (10, 4), (15, 4), (18, 4), (11, 4), (19, 4),
+                     (16, 4), (20, 4), (14, 4), (6, 4), (12, 4), (17, 4), (21, 4), (1, 6)],
+                    [(17, 5), (13, 4), (1, 6)])
+units += U(1, [("battleship", 6, 2), ("battleship", 20, 2), ("cruiser", 11, 3), ("cruiser", 16, 3),
+               ("destroyer", 3, 3), ("destroyer", 9, 3), ("destroyer", 23, 3)])
+units += U(1, [("infantry", 22, 6)])               # airborne at the Orne bridges
+for t, c, r in [("bunker", 9, 5), ("bunker", 15, 5), ("bunker", 19, 5), ("infantry", 3, 5),
+                ("infantry", 11, 5), ("infantry", 17, 6), ("infantry", 7, 6), ("atgun", 13, 6),
+                ("infantry", 21, 7)]:
+    units.append((2, t, c, r, "entrench=2" if t != "bunker" else ""))
+units += U(2, [("infantry", 5, 7), ("atgun", 18, 8), ("infantry", 24, 10), ("fieldart", 7, 8),
+               ("infantry", 16, 7), ("atgun", 10, 7),
+               ("infantry", 12, 10)], "entrench=2")
+units += U(2, [("fieldart", 12, 8), ("fieldart", 20, 9), ("infantry", 3, 8), ("infantry", 14, 9),
+               ("medtank", 23, 12), ("infantry", 23, 11), ("flak", 24, 12), ("infantry", 10, 13),
+               ("armcar", 17, 10)])
+units += U(2, [("fighter", 26, 14)])
+write("ww2_normandy.scn", hdr, m, [(2, 0, 27)], places, units,
+      extra=R(2, 2, [("heavytank", 26, 15), ("medtank", 24, 15), ("pioneers", 25, 15)])
+      + R(6, 2, [("medtank", 12, 15), ("infantry", 8, 15), ("heavyart", 18, 15)])
+      + R(3, 1, [("infantry", 13, 4), ("medtank", 15, 4)])
+      + R(6, 1, [("infantry", 10, 4), ("heavytank", 14, 4)]))
+
+# =====================================================================
+# WW2: Bastogne (Crusade in Europe stage 2) - hold the Ardennes in winter
+# =====================================================================
+m = Map(28, 18)
+m.scatter(0, 0, 27, 17, 'f', 0.42, 91)
+m.scatter(0, 0, 27, 17, 'h', 0.22, 92)
+m.path([(1, 0), (2, 8), (1, 17)], '~')             # Meuse
+m.path([(25, 0), (24, 9), (25, 17)], '~')          # Our
+m.path([(9, 0), (10, 8), (8, 17)], '~')            # Ourthe
+m.path([(27, 4), (21, 4), (15, 6), (8, 7), (2, 8)], '=', keep='~')
+m.path([(27, 12), (20, 12), (14, 11), (8, 7)], '=', keep='~')
+m.path([(21, 4), (14, 11), (13, 17)], '=', keep='~')
+m.path([(15, 6), (14, 11)], '=', keep='~')
+m.path([(14, 11), (6, 13), (2, 8)], '=', keep='~')
+places = [(21, 4, 't', 'St_Vith', 1, True), (15, 6, 't', 'Houffalize', 1, True), (14, 11, 'C', 'Bastogne', 1, True),
+          (2, 8, 't', 'Dinant', 1, False), (8, 7, 't', 'Marche', 1, True), (20, 12, 't', 'Wiltz', 1, False),
+          (6, 13, 't', 'St_Hubert', 1, False), (4, 3, 'A', 'Airfield', 1, False), (5, 16, 'A', 'Airfield', 1, False),
+          (27, 2, 't', 'Prum', 2, False), (26, 15, 'A', 'Airfield', 2, False)]
+hdr = ["title Bastogne (1944)",
+       "description December 1944. Under cover of fog and snow, three German armies have",
+       "description burst out of the Eifel into the thinly held Ardennes. Hold the road",
+       "description junctions of St Vith, Houffalize and Bastogne and keep the enemy from",
+       "description Marche on the road to the Meuse. Low cloud grounds your air forces -",
+       "description until the skies clear.",
+       "description Relief from the south is on its way. 18 turns.",
+       "era ww2", "turns 18", "attacker 2", "first 2", "climate winter",
+       "weather turn=1 fog", "weather turn=2 fog", "weather turn=3 snow", "weather turn=4 snow",
+       "weather turn=5 overcast", "weather turn=6 snow", "weather turn=7 fair", "weather turn=8 fair",
+       "weather turn=9 fair",
+       "supply side=1 edge=west", "supply side=2 edge=east",
+       "side 1 name=Allied_Forces color=175,150,95 control=human prestige=150 income=30",
+       "side 2 name=Wehrmacht color=96,104,88 control=ai prestige=400 income=45",
+       "hint turn=1 THE BULGE",
+       "more",
+       "more This time you defend. The enemy needs ALL FOUR objectives; you win by",
+       "more holding any one of them when time runs out. Fog and snow keep both air",
+       "more forces on the ground, but the forecast promises clear skies within a",
+       "more week. Every hex the enemy advances stretches his supply line: units",
+       "more cut off from the east edge will wither.",
+       "hint turn=7 The skies are clearing! Your fighter-bombers can finally fly.",
+       "hint turn=8 Third Army's armoured columns are attacking from the south!"]
+# A thin line: nine core ground slots (later survivors from Normandy are
+# placed in reserve near Marche).
+units = U(1, [("infantry", 20, 5), ("infantry", 14, 11), ("infantry", 15, 6), ("infantry", 20, 12),
+              ("medtank", 21, 3), ("pioneers", 14, 12), ("fieldart", 13, 10), ("atgun", 8, 7),
+              ("armcar", 22, 8)], "core")
+units += U(1, [("fighter", 4, 3), ("fighter", 5, 16), ("divebomb", 8, 7)], "core")
+ger = [("heavytank", 26, 4), ("heavytank", 26, 12), ("medtank", 26, 6), ("medtank", 26, 10),
+       ("medtank", 27, 8), ("lighttank", 27, 3), ("infantry", 26, 2), ("infantry", 26, 7),
+       ("infantry", 26, 9), ("infantry", 26, 13), ("infantry", 27, 5), ("infantry", 27, 11),
+       ("pioneers", 26, 5), ("pioneers", 26, 11), ("fieldart", 27, 6), ("fieldart", 27, 10),
+       ("heavyart", 27, 9), ("armcar", 26, 3), ("armcar", 26, 14), ("atgun", 27, 13),
+       ("flak", 27, 7), ("infantry", 27, 14), ("infantry", 25, 15), ("medtank", 27, 15),
+       ("infantry", 26, 1), ("fieldart", 27, 1), ("pioneers", 25, 3),
+       ("infantry", 27, 16)]
+units += U(2, ger)
+units += U(2, [("fighter", 26, 15), ("divebomb", 27, 2)])
+write("ww2_bastogne.scn", hdr, m, [(1, 0, 25), (2, 26, 27)], places, units,
+      extra=R(8, 1, [("medtank", 12, 17), ("medtank", 15, 17), ("infantry", 13, 17), ("fieldart", 14, 17)])
+      + R(8, 1, [("infantry", 2, 10), ("medtank", 1, 6)])
+      + R(4, 2, [("heavytank", 27, 4), ("infantry", 27, 12)]))
+
+# =====================================================================
+# WW1: Tannenberg (1914) - encirclement among the Masurian lakes
+# =====================================================================
+m = Map(26, 16)
+m.scatter(0, 0, 25, 15, 'f', 0.22, 101)
+m.scatter(0, 0, 25, 15, 'h', 0.08, 102)
+for c0, r0, c1, r1 in [(6, 2, 7, 4), (13, 6, 14, 7), (17, 8, 18, 10), (21, 3, 23, 4), (9, 11, 9, 12),
+                       (2, 9, 3, 10), (23, 11, 24, 12)]:
+    m.rect(c0, r0, c1, r1, 'w')                    # lakes
+m.scatter(0, 0, 25, 15, 's', 0.06, 103)
+m.path([(0, 5), (4, 5), (11, 8), (16, 5), (20, 1), (25, 0)], '=', keep='w')
+m.path([(4, 5), (8, 9), (11, 14), (15, 15)], '=', keep='w')
+m.path([(11, 8), (15, 4), (16, 0)], '=', keep='w')
+m.path([(8, 9), (4, 14)], '=', keep='w')
+m.path([(11, 14), (19, 11), (20, 6)], '=', keep='w')
+places = [(4, 5, 't', 'Osterode', 1, False), (8, 9, 't', 'Tannenberg', 1, False), (2, 13, 't', 'Lautenburg', 1, False),
+          (20, 1, 't', 'Bischofsburg', 1, False), (0, 2, 'A', 'Airfield', 1, False),
+          (15, 4, 'C', 'Allenstein', 2, True), (11, 8, 't', 'Hohenstein', 2, True), (11, 14, 't', 'Neidenburg', 2, True),
+          (4, 14, 't', 'Soldau', 2, True), (19, 11, 't', 'Ortelsburg', 2, False), (14, 15, 'A', 'Airfield', 2, False)]
+hdr = ["title Tannenberg (1914)",
+       "description August 1914. The Russian Second Army has marched deep into East Prussia,",
+       "description its supply columns trailing far behind. Your corps have come round by",
+       "description rail to both of its flanks. Close the trap among the lakes and forests:",
+       "description take Allenstein, Hohenstein, Neidenburg and Soldau. Cut the roads to the",
+       "description south and the enemy will starve. 14 turns.",
+       "era ww1", "turns 14", "attacker 1", "first 1", "climate temperate",
+       "weather turn=1 fair", "weather turn=2 fair",
+       "supply side=1 edge=north", "supply side=2 edge=south",
+       "side 1 name=German_Army color=110,120,130 control=human prestige=200 income=30",
+       "side 2 name=Russian_Army color=70,120,80 control=ai prestige=80 income=10",
+       "hint turn=1 ENCIRCLEMENT",
+       "more",
+       "more The Russians draw their supply from the south edge of the map. Drive your",
+       "more flanks behind them - to Soldau in the west and Neidenburg in the south -",
+       "more and their whole army will be cut off: weaker in battle and wasting away",
+       "more each turn. Press S to watch their supply lines shrink."]
+units = U(1, [("infantry", 3, 4), ("infantry", 3, 6), ("infantry", 5, 7), ("infantry", 6, 9),
+              ("infantry", 4, 11), ("storm", 5, 8), ("mg", 4, 6), ("fieldgun", 2, 5), ("fieldgun", 3, 8),
+              ("howitzer", 1, 6), ("cavalry", 2, 12), ("infantry", 1, 13)])
+units += U(1, [("infantry", 15, 1), ("infantry", 17, 2), ("infantry", 19, 2), ("mg", 18, 1),
+               ("fieldgun", 16, 0), ("cavalry", 21, 1), ("infantry", 13, 1)])
+units += U(1, [("scout", 0, 2)])
+units += U(2, [("infantry", 14, 4), ("infantry", 15, 5), ("infantry", 11, 7), ("infantry", 10, 8),
+               ("infantry", 12, 9), ("infantry", 9, 7), ("infantry", 11, 13), ("infantry", 5, 13),
+               ("mg", 12, 8), ("mg", 13, 5), ("fieldgun", 13, 9), ("fieldgun", 12, 11), ("cavalry", 17, 6),
+               ("cavalry", 6, 14), ("infantry", 16, 12), ("infantry", 19, 12), ("armcar", 14, 13),
+               ("infantry", 15, 3), ("infantry", 4, 13)])
+units += U(2, [("scout", 14, 15)])
+write("ww1_tannenberg.scn", hdr, m, [(2, 0, 25), (1, 0, 8)], places, units,
+      extra=R(4, 1, [("infantry", 25, 1), ("infantry", 24, 0), ("fieldgun", 23, 0)])
+      + R(5, 2, [("infantry", 15, 15), ("infantry", 17, 15)]))
+
+# =====================================================================
+# Napoleonic: Waterloo (1815)
+# =====================================================================
+m = Map(24, 14)
+m.scatter(0, 0, 23, 13, 'f', 0.07, 111)
+m.rect(2, 4, 21, 4, 'h')                            # Mont-Saint-Jean ridge
+m.scatter(2, 4, 21, 4, '.', 0.25, 112, only='h')
+m.rect(4, 10, 20, 10, 'h')                          # La Belle Alliance ridge
+m.scatter(4, 10, 20, 10, '.', 0.35, 113, only='h')
+m.rect(4, 6, 7, 8, 'f'); m.set(6, 7, '.')          # Hougoumont woods
+m.rect(19, 3, 23, 13, 'f')                          # Bois de Paris
+m.scatter(19, 3, 23, 13, '.', 0.35, 114, only='f')
+m.path([(23, 2), (21, 6), (22, 13)], '~')           # Lasne brook
+m.path([(12, 0), (12, 3), (12, 6), (12, 10), (12, 13)], '=', keep='~')
+m.path([(6, 0), (6, 7), (8, 13)], '=', keep='~')
+m.path([(12, 3), (18, 6), (23, 8)], '=', keep='~')
+places = [(6, 7, 't', 'Hougoumont', 2, True), (12, 6, 't', 'La_Haye_Sainte', 2, True),
+          (18, 6, 't', 'Papelotte', 2, True), (12, 3, 't', 'Mont-St-Jean', 2, True),
+          (12, 0, 't', 'Waterloo', 2, False), (12, 10, 't', 'La_Belle_Alliance', 1, False),
+          (19, 11, 't', 'Plancenoit', 1, False), (8, 13, 't', 'Genappe', 1, False)]
+hdr = ["title Waterloo (1815)",
+       "description 18 June 1815. Rain has soaked the fields all night and the guns sink in",
+       "description the mud. Wellington's army holds the ridge of Mont-Saint-Jean with the",
+       "description farms of Hougoumont, La Haye Sainte and Papelotte as bastions. Break",
+       "description his line before the Prussians arrive on your right flank from the",
+       "description east. 12 turns.",
+       "era napoleonic", "turns 12", "attacker 1", "first 1", "climate temperate",
+       "weather turn=1 rain", "weather turn=2 rain", "weather turn=3 overcast", "weather turn=4 fair",
+       "supply side=1 edge=south", "supply side=2 edge=north",
+       "side 1 name=Armee_du_Nord color=50,70,160 control=human prestige=200 income=20",
+       "side 2 name=Allied_Army color=190,50,50 control=ai prestige=60 income=10",
+       "hint turn=5 Dark columns are emerging from the Bois de Paris - the Prussians!",
+       "more Guard your right flank and your line of supply through Plancenoit."]
+units = U(1, [("line", 5, 9), ("line", 7, 9), ("line", 9, 9), ("line", 11, 9), ("line", 14, 9), ("line", 16, 9),
+              ("line", 18, 9), ("light", 4, 8), ("grenadier", 10, 11), ("guard", 12, 11), ("guard", 13, 12),
+              ("cuirass", 9, 11), ("cuirass", 14, 11), ("dragoons", 16, 11), ("hussars", 3, 10),
+              ("hussars", 19, 9), ("footart", 10, 10), ("footart", 13, 10), ("footart", 15, 10),
+              ("horseart", 8, 10), ("sappers", 6, 10)])
+for t, c, r in [("line", 6, 7), ("grenadier", 12, 6), ("light", 18, 6), ("line", 4, 4), ("line", 8, 4),
+                ("line", 10, 4), ("line", 14, 4), ("line", 16, 4), ("guard", 7, 3)]:
+    units.append((2, t, c, r, "entrench=1"))
+units += U(2, [("line", 12, 4), ("grenadier", 9, 2)])
+units += U(2, [("light", 11, 5), ("footart", 9, 3), ("footart", 13, 3), ("horseart", 17, 3),
+               ("cuirass", 11, 2), ("dragoons", 14, 2), ("hussars", 19, 4), ("line", 12, 3)])
+write("nap_waterloo.scn", hdr, m, [(2, 0, 23)], places, units,
+      extra=R(5, 2, [("line", 23, 9), ("hussars", 23, 7)])
+      + R(6, 2, [("line", 23, 10), ("footart", 23, 8)])
+      + R(7, 2, [("line", 23, 11), ("dragoons", 22, 12), ("line", 23, 6)])
+      + R(8, 2, [("line", 23, 12), ("grenadier", 23, 10)]))
+
+# =====================================================================
+# American Civil War: Gettysburg (1863)
+# =====================================================================
+m = Map(24, 16)
+m.scatter(0, 0, 23, 15, 'f', 0.16, 121)
+m.rect(6, 2, 6, 13, 'h')                            # Seminary Ridge
+m.scatter(6, 2, 6, 13, 'f', 0.4, 122, only='h')
+m.rect(11, 7, 11, 11, 'h')                          # Cemetery Ridge
+m.set(12, 6, 'h'); m.set(13, 6, 'h')                # Cemetery Hill
+m.set(15, 5, 'h'); m.set(16, 5, 'f'); m.set(15, 6, 'f')   # Culp's Hill
+m.set(11, 13, 'h'); m.set(11, 14, 'M'); m.set(10, 13, 'f')  # Round Tops, Devil's Den
+m.path([(17, 0), (17, 7), (18, 15)], '~')           # Rock Creek
+m.path([(0, 13), (3, 15)], '~')                     # Willoughby Run
+m.path([(10, 4), (0, 2)], '=', keep='~')            # Chambersburg Pike
+m.path([(10, 4), (10, 0)], '=', keep='~')
+m.path([(10, 4), (13, 6), (16, 13), (23, 15)], '=', keep='~')   # Baltimore Pike
+m.path([(10, 4), (7, 11), (5, 15)], '=', keep='~')  # Emmitsburg Road
+m.path([(10, 4), (23, 3)], '=', keep='~')           # York Pike
+places = [(10, 4, 't', 'Gettysburg', 1, False), (2, 2, 't', 'Cashtown', 1, False),
+          (12, 6, 'h', 'Cemetery_Hill', 2, True), (15, 5, 'h', 'Culps_Hill', 2, True),
+          (11, 9, 'h', 'Cemetery_Ridge', 2, True), (11, 13, 'h', 'Little_Round_Top', 2, True),
+          (16, 13, 't', 'Two_Taverns', 2, False), (8, 11, 't', 'Peach_Orchard', 2, False)]
+hdr = ["title Gettysburg (1863)",
+       "description July 1863. After the first day's fighting your army holds the town,",
+       "description but the enemy has dug in on the high ground beyond it: Culp's Hill,",
+       "description Cemetery Hill, Cemetery Ridge and the Round Tops form a fishhook.",
+       "description Take all four heights before his last corps arrive. Rifled muskets",
+       "description make frontal assaults costly - use your guns. 14 turns.",
+       "era acw", "turns 14", "attacker 1", "first 1", "climate temperate",
+       "weather turn=1 fair", "weather turn=2 fair",
+       "supply side=1 edge=west", "supply side=2 edge=east",
+       "side 1 name=Army_of_Northern_Virginia color=150,150,150 control=human prestige=200 income=20",
+       "side 2 name=Army_of_the_Potomac color=40,60,140 control=ai prestige=80 income=10"]
+units = U(1, [("veteran", 7, 3), ("infantry", 8, 4), ("infantry", 9, 5), ("veteran", 11, 3), ("infantry", 12, 2),
+              ("infantry", 14, 2), ("infantry", 5, 7), ("veteran", 5, 9), ("infantry", 5, 11), ("infantry", 6, 12),
+              ("sharpshoot", 9, 3), ("napoleon", 6, 5), ("rifled", 6, 8), ("napoleon", 6, 10),
+              ("rifled", 13, 1), ("cavalry", 16, 1), ("pioneers", 7, 6)])
+for t, c, r in [("infantry", 12, 6), ("veteran", 15, 5), ("infantry", 13, 6), ("infantry", 11, 8),
+                ("infantry", 11, 10), ("infantry", 11, 13), ("infantry", 14, 5), ("infantry", 11, 7)]:
+    units.append((2, t, c, r, "entrench=2"))
+units += U(2, [("earthwork", 12, 7), ("rifled", 12, 8), ("napoleon", 13, 7), ("rifled", 12, 10),
+               ("sharpshoot", 10, 12), ("cavalry", 18, 11), ("infantry", 8, 11), ("infantry", 14, 9)])
+write("acw_gettysburg.scn", hdr, m, [(1, 0, 10), (2, 11, 23)], places, units,
+      extra=R(2, 1, [("veteran", 0, 7), ("veteran", 0, 9), ("infantry", 0, 8), ("rifled", 1, 8)])
+      + R(5, 2, [("infantry", 23, 14), ("veteran", 22, 15), ("napoleon", 23, 13)])
+      + R(8, 2, [("infantry", 23, 15), ("infantry", 21, 15)]))
 
 # =====================================================================
 # Campaign
@@ -531,5 +842,16 @@ player 1
 prestige 0
 stage id=michael file=ww1_michael.scn win=marne   loss=defeat
 stage id=marne   file=ww1_marne.scn   win=victory loss=defeat
+""")
+with open(os.path.join(camp, 'crusade_in_europe.cmp'), 'w') as f:
+    f.write("""title Crusade in Europe (1944)
+era ww2
+description Command an Allied corps from the D-Day beaches to the snows of the
+description Ardennes: first break out of the Normandy beachhead, then hold the
+description road junctions when the enemy strikes back in the winter offensive.
+player 1
+prestige 0
+stage id=normandy file=ww2_normandy.scn win=bastogne loss=bastogne
+stage id=bastogne file=ww2_bastogne.scn win=victory  loss=defeat
 """)
 print("scenarios written to", os.path.normpath(OUT))

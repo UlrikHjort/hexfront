@@ -6,7 +6,8 @@ scenarios defined in plain text data files.
 
 ## Features
 
-* Era-neutral engine; WW2, WW1 and Napoleonic eras defined in data files
+* Era-neutral engine; WW2, WW1, Napoleonic and American Civil War eras
+  defined in data files
 * Fog of war with spotting ranges and ambushes
 * Air units (fighters, bombers) in a separate air layer, flak and interception;
   aircraft must return to airfields or friendly towns to refuel
@@ -19,7 +20,23 @@ scenarios defined in plain text data files.
 * Animated movement and combat (muzzle flashes, explosions, loss numbers)
   with synthesised sound effects (played with paplay / pw-play / aplay)
 * Campaigns: Blitz in the West (1940), The Road to Austerlitz (1805),
-  Kaiserschlacht (1918)
+  Kaiserschlacht (1918), Crusade in Europe (1944)
+* Scenarios: Boot Camp tutorial; Meuse, Channel, Dunkirk, Normandy and
+  Bastogne (WW2); Big Push, Michael, Marne and Tannenberg (WW1); Ulm,
+  Austerlitz and Waterloo (Napoleonic); Gettysburg (Civil War)
+* Supply lines: supply flows from own towns, cities, fortresses, airfields
+  and the side's map edge, but not through enemy units or their zones of
+  control. Low supply means partial resupply; units cut off fight at -1,
+  cannot resupply and lose strength each turn after the first.
+  View > Show supply lines (S) shades the map
+* Weather: fair, overcast, rain, snow and fog, rolled each turn from the
+  scenario's climate or scheduled per turn. Rain, snow and fog ground
+  aircraft; mud and snow slow movement off the roads; poor visibility
+  shortens sight and ranged fire. The status panel shows a forecast
+* Warships (battleships, cruisers, destroyers) that sail on water, bombard
+  the coast and replenish next to an own port
+* Order of battle window (F2) and a clickable minimap
+* Optional silhouette unit graphics (View > Unit silhouettes)
 * Scenario and campaign chooser with a map preview
 * Encirclement: units with no escape hex are surrounded (defence -2, no
   supply). The AI withdraws battered units, concentrates its attacks,
@@ -39,15 +56,33 @@ scenarios defined in plain text data files.
 
 ## Build & run
 
-    gprbuild -P hexfront.gpr
+Needs GNAT, gprbuild and GtkAda for GTK3 (Debian/Ubuntu:
+`sudo apt install gnat gprbuild libgtkada20-dev`).
+
+    make                                             # or: gprbuild -P hexfront.gpr
     ./bin/hexfront                                   # scenario chooser
     ./bin/hexfront data/scenarios/ww2_meuse.scn      # start directly
     ./bin/hexfront data/scenarios/ww1_bigpush.scn watch   # side1|side2|hotseat|watch
 
+Install (binary to `$PREFIX/bin`, data to `$PREFIX/share/hexfront`, plus a
+desktop entry and icon):
+
+    make install PREFIX=$HOME/.local       # default PREFIX is /usr/local
+    make uninstall PREFIX=$HOME/.local
+
+The data directory is found via `$HEXFRONT_DATA`, `./data`, `data/` next to
+or above the binary, or `<prefix>/share/hexfront`.
+
 Tools:
 
-    gprbuild -P selftest.gpr && ./bin/selftest [-v]  # AI vs AI on every scenario
-    gprbuild -P render.gpr && ./bin/render_png <scn> out.png   # headless map render
+    make test                    # AI vs AI on every scenario, save/load, editor, campaigns
+    make balance ROUNDS=40       # attacker win counts per scenario
+    HEXFRONT_ONLY=waterloo ./bin/selftest 30   # only scenarios whose path matches
+    ./bin/selftest -s            # supply statistics per scenario
+    make render && ./bin/render_png <scn> out.png [sil,supply,turns=N,rain|snow|fog,mini]
+
+A GitHub Actions workflow (`.github/workflows/build.yml`) builds the game,
+runs the self-test, renders a couple of maps and test-installs on every push.
 
 ## Layout
 
@@ -58,11 +93,12 @@ Tools:
       engine-game       game state, movement/ZOC, combat, supply, turns, victory
       engine-loader     .era and .scn parsers
       engine-ai         computer opponent (one unit per step)
-    src/ui/       GtkAda front end (Cairo map renderer + main window)
       engine-campaign   campaign chains and core-unit carry-over
       engine-save       save/load (~/.hexfront/saves)
       engine-editing    editor operations and the .scn writer
-    data/eras/        ww2.era, ww1.era, napoleonic.era
+    src/ui/       GtkAda front end (Cairo map renderer, main window, editor,
+                  order of battle, campaign HQ, animation and sound)
+    data/eras/        ww2.era, ww1.era, napoleonic.era, acw.era
     data/scenarios/   *.scn
     data/campaigns/   *.cmp
     data/sounds/      *.wav sound effects
@@ -81,22 +117,31 @@ Tools:
   of moving or attacking.
 * The attacker must take every objective (gold ring) before the turn limit.
 
+* Supply and weather as described above.
+
 Era tweaks (`rule` line): `max_entrench`, `charge_bonus` (cavalry shock in the
-open), `square_bonus` (infantry vs cavalry), `close_armor_penalty`.
+open), `square_bonus` (infantry vs cavalry), `close_armor_penalty`,
+`supply_range` (movement points of full supply; up to twice that is low).
 
 ## Data formats
 
 Era file: `unit id=medtank name=Medium_Tank class=armor move=tracked target=hard
 mp=6 range=1 soft=7 hard=8 def=8 ammo=8 fuel=50 cost=300 flags=support,bombard`
-(underscores become spaces).
+(underscores become spaces). Movement classes: `foot horse wheeled tracked
+static air naval`; class `warship` for ships.
 
 Scenario file: `title`, `description`, `era`, `turns`, `attacker`, `first`,
 `side N name= color=r,g,b control=human|ai prestige= income=`, `map W H`
 followed by H rows of terrain glyphs, `territory side= cols=A-B`,
 `place at=c,r name= owner= [victory]`, `unit side= type= at=c,r [str= exp= entrench=] [core]`.
 Optional: `category Tutorial`, `fog on|off`, `buy side=N types=a,b,c|none`,
-`hint turn=N text...` or `hint event=select|move|contact|ambush|attack|kill|loss|capture|buy|resupply|reinforce text...`
-with `more text...` continuation lines.
+`hint turn=N text...` or `hint event=select|move|contact|ambush|attack|kill|loss|capture|buy|resupply|reinforce|reinforcements|weather text...`
+with `more text...` continuation lines,
+`reinforce turn= side= type= at=c,r [core]`,
+`climate fair|temperate|wet|winter`, `weather turn=N fair|overcast|rain|snow|fog`
+(overrides the climate for that turn),
+`supply side=N edge=west|east|north|south|none` (default: the edge behind
+the side's starting units).
 
 Campaign file (`data/campaigns/*.cmp`): `title`, `era`, `description`,
 `player N`, `prestige N`, and `stage id= file= win=<id|victory> loss=<id|defeat>`.

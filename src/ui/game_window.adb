@@ -50,6 +50,7 @@ with Anim;
 with Sound;
 with Editor;
 with Campaign_HQ;
+with Oob_Window;
 
 package body Game_Window is
 
@@ -68,6 +69,8 @@ package body Game_Window is
    Fair_Item    : Gtk_Check_Menu_Item;
    Btn_Resupply, Btn_Reinforce, Btn_Buy, Btn_Next, Btn_End : Gtk_Button;
    Btn_Undo     : Gtk_Button;
+   Mini         : Gtk_Drawing_Area;
+   Supply_Item  : Gtk_Check_Menu_Item;
 
    View         : View_State;
    AI_Running   : Boolean := False;
@@ -205,6 +208,20 @@ package body Game_Window is
       if Is_Surrounded (U) then
          Append (S, ASCII.LF & "<span foreground='#c00000'><b>SURROUNDED</b>"
                  & " - defence -2, no supply</span>");
+      elsif Own and then T.Mover not in Air | Naval | Static then
+         case Supply_Of (U) is
+            when Supplied =>
+               Append (S, ASCII.LF & "Supply: good");
+            when Low_Supply =>
+               Append (S, ASCII.LF & "<span foreground='#b07000'>Supply: "
+                       & "low - partial resupply only</span>");
+            when Cut_Off =>
+               Append (S, ASCII.LF & "<span foreground='#c00000'><b>OUT OF "
+                       & "SUPPLY</b> - fights at -1, no resupply"
+                       & (if Get (U).Cut_Turns >= 1
+                          then ", losing strength" else "")
+                       & "</span>");
+         end case;
       end if;
       if T.Charge or else T.Support or else T.Ignore_Entrench
         or else T.Bombard
@@ -274,6 +291,11 @@ package body Game_Window is
          & (if G.Sides (G.Current).Control = Computer then " (computer)"
             else "") & ASCII.LF
          & "Prestige: " & Img (G.Sides (G.Current).Prestige) & ASCII.LF
+         & "Weather: <b>" & Weather_Name (G.Weather) & "</b>"
+         & (if G.Weather /= Fair
+            then " <small>(" & Weather_Effects (G.Weather) & ")</small>"
+            else "")
+         & ", forecast " & Weather_Name (G.Forecast) & ASCII.LF
          & "Objectives: " & Esc (To_String (G.Sides (G.Attacker).Name))
          & " holds " & Img (Victory_Hexes_Owned (G.Attacker)) & " of "
          & Img (Victory_Hexes_Total));
@@ -392,6 +414,9 @@ package body Game_Window is
       end loop;
    end Show_Hints;
 
+   function Oob_Side return Side_Id is
+     (if View.Viewer in Player_Side then View.Viewer else G.Current);
+
    procedure Refresh is
    begin
       View.Viewer := Viewer;
@@ -399,6 +424,12 @@ package body Game_Window is
       Update_Panels;
       Update_Hover_Info;
       Area.Queue_Draw;
+      if Mini /= null then
+         Mini.Queue_Draw;
+      end if;
+      if G.Loaded and then not Editor.Active then
+         Oob_Window.Update (Oob_Side);
+      end if;
    end Refresh;
 
    ------------------
@@ -824,6 +855,95 @@ package body Game_Window is
       Dlg.Destroy;
    end On_Buy;
 
+   ---------------------
+   -- Order of battle --
+   ---------------------
+
+   procedure Oob_Picked (U : Positive) is
+   begin
+      if not Get (U).Alive then
+         return;
+      end if;
+      Ensure_Visible (Get (U).Pos);
+      if Human_Turn and then Get (U).Side = G.Current then
+         Select_Unit (U);
+      else
+         View.Hover := Get (U).Pos;
+         Refresh;
+      end if;
+   end Oob_Picked;
+
+   procedure Show_Oob is
+   begin
+      if G.Loaded and then not Editor.Active then
+         Oob_Window.On_Pick := Oob_Picked'Access;
+         Oob_Window.Show (Win, Oob_Side);
+      end if;
+   end Show_Oob;
+
+   -------------
+   -- Minimap --
+   -------------
+
+   function Mini_Draw (W : access Gtk_Widget_Record'Class;
+                       Cr : Cairo.Cairo_Context) return Boolean
+   is
+      HA : constant Gtk.Adjustment.Gtk_Adjustment :=
+        Map_Scroll.Get_Hadjustment;
+      VA : constant Gtk.Adjustment.Gtk_Adjustment :=
+        Map_Scroll.Get_Vadjustment;
+   begin
+      Draw_Minimap
+        (Cr, Gdouble (W.Get_Allocated_Width),
+         Gdouble (W.Get_Allocated_Height), View.Viewer,
+         HA.Get_Value / Zoom, VA.Get_Value / Zoom,
+         HA.Get_Page_Size / Zoom, VA.Get_Page_Size / Zoom);
+      return True;
+   end Mini_Draw;
+
+   procedure Mini_Jump (W : access Gtk_Widget_Record'Class;
+                        MX, MY : Gdouble) is
+      X, Y : Gdouble;
+      HA : constant Gtk.Adjustment.Gtk_Adjustment :=
+        Map_Scroll.Get_Hadjustment;
+      VA : constant Gtk.Adjustment.Gtk_Adjustment :=
+        Map_Scroll.Get_Vadjustment;
+   begin
+      if not G.Loaded then
+         return;
+      end if;
+      Minimap_To_Map (MX, MY, Gdouble (W.Get_Allocated_Width),
+                      Gdouble (W.Get_Allocated_Height), X, Y);
+      HA.Set_Value (X * Zoom - HA.Get_Page_Size / 2.0);
+      VA.Set_Value (Y * Zoom - VA.Get_Page_Size / 2.0);
+      Mini.Queue_Draw;
+   end Mini_Jump;
+
+   function Mini_Press (W : access Gtk_Widget_Record'Class;
+                        Event : Gdk_Event_Button) return Boolean is
+   begin
+      Mini_Jump (W, Event.X, Event.Y);
+      return True;
+   end Mini_Press;
+
+   function Mini_Motion (W : access Gtk_Widget_Record'Class;
+                         Event : Gdk_Event_Motion) return Boolean is
+   begin
+      if (Event.State and Button1_Mask) /= 0 then
+         Mini_Jump (W, Event.X, Event.Y);
+      end if;
+      return True;
+   end Mini_Motion;
+
+   procedure Scrolled (A : access Gtk.Adjustment.Gtk_Adjustment_Record'Class)
+   is
+      pragma Unreferenced (A);
+   begin
+      if Mini /= null then
+         Mini.Queue_Draw;
+      end if;
+   end Scrolled;
+
    ------------------
    -- Map handlers --
    ------------------
@@ -969,6 +1089,14 @@ package body Game_Window is
          return True;
       elsif Event.Keyval = GDK_0 then
          Set_Zoom (1.0);
+         return True;
+      elsif Event.Keyval = GDK_F2 then
+         Show_Oob;
+         return True;
+      elsif Event.Keyval = GDK_LC_s
+        and then (Event.State and Control_Mask) = 0
+      then
+         Supply_Item.Set_Active (not Supply_Item.Get_Active);
          return True;
       elsif Event.Keyval = GDK_LC_e
         and then (Event.State and Control_Mask) /= 0
@@ -1284,7 +1412,19 @@ package body Game_Window is
      & "Ctrl+Z = undo move, + / - / 0 = zoom (also Ctrl+mouse wheel). "
      & "Right-click deselects or cancels." & ASCII.LF & ASCII.LF
      & "A unit with no way out (all neighbours enemy-held, impassable or in "
-     & "an enemy zone of control) is SURROUNDED: defence -2 and no supply.";
+     & "an enemy zone of control) is SURROUNDED: defence -2 and no supply."
+     & ASCII.LF & ASCII.LF
+     & "Supply flows from your towns, cities, fortresses and airfields and "
+     & "from your own map edge, but not through enemy units or their zones "
+     & "of control. Units far from it are on low supply (partial resupply); "
+     & "units cut off fight at -1, cannot resupply and lose strength every "
+     & "turn after the first. View > Show supply lines (S) shades the map."
+     & ASCII.LF & ASCII.LF
+     & "Weather: rain, snow and fog ground all aircraft; mud slows vehicles "
+     & "and snow slows everybody off the roads; bad weather shortens sight "
+     & "and ranged fire. Check the forecast in the status panel."
+     & ASCII.LF & ASCII.LF
+     & "F2 opens the order of battle; click the minimap to jump around.";
 
    procedure On_New (M : access Gtk_Menu_Item_Record'Class) is
       pragma Unreferenced (M);
@@ -1398,6 +1538,24 @@ package body Game_Window is
                    Gdouble (Map_Scroll.Get_Allocated_Height) / Gdouble (H)));
    end On_Zoom_Fit;
 
+   procedure On_Supply (M : access Gtk_Check_Menu_Item_Record'Class) is
+   begin
+      View.Show_Supply := M.Get_Active;
+      Area.Queue_Draw;
+   end On_Supply;
+
+   procedure On_Silhouettes (M : access Gtk_Check_Menu_Item_Record'Class) is
+   begin
+      Silhouettes := M.Get_Active;
+      Area.Queue_Draw;
+   end On_Silhouettes;
+
+   procedure On_Oob (M : access Gtk_Menu_Item_Record'Class) is
+      pragma Unreferenced (M);
+   begin
+      Show_Oob;
+   end On_Oob;
+
    procedure On_Quit (M : access Gtk_Menu_Item_Record'Class) is
       pragma Unreferenced (M);
    begin
@@ -1469,6 +1627,16 @@ package body Game_Window is
       Gtk_New (Win);
       Win.Set_Title ("Hexfront - operational wargame");
       Win.Set_Default_Size (1280, 820);
+      declare
+         Icon : constant String :=
+           Engine.Loader.Data_Dir & "/icons/hexfront.svg";
+      begin
+         if not Ada.Directories.Exists (Icon)
+           or else not Win.Set_Icon_From_File (Icon)
+         then
+            Win.Set_Icon_Name ("hexfront");
+         end if;
+      end;
       Win.On_Destroy (On_Destroy'Access);
       Win.On_Key_Press_Event (On_Key'Access);
 
@@ -1525,6 +1693,23 @@ package body Game_Window is
       Add ("Zoom _out   (-)", On_Zoom_Out'Access);
       Add ("_Normal size   (0)", On_Zoom_Reset'Access);
       Add ("_Fit map to window", On_Zoom_Fit'Access);
+      Gtk_New (Sep);
+      Menu.Append (Sep);
+      Gtk_New (Supply_Item, "Show _supply lines   (S)");
+      Supply_Item.Set_Use_Underline (True);
+      Supply_Item.On_Toggled (On_Supply'Access);
+      Menu.Append (Supply_Item);
+      declare
+         C : Gtk_Check_Menu_Item;
+      begin
+         Gtk_New (C, "Unit _silhouettes");
+         C.Set_Use_Underline (True);
+         C.On_Toggled (On_Silhouettes'Access);
+         Menu.Append (C);
+      end;
+      Gtk_New (Sep);
+      Menu.Append (Sep);
+      Add ("_Order of battle   (F2)", On_Oob'Access);
 
       Gtk_New_With_Mnemonic (Item, "_Help");
       Bar.Append (Item);
@@ -1560,6 +1745,16 @@ package body Game_Window is
       Status_Label.Set_Alignment (0.0, 0.0);
       Status_Label.Set_Line_Wrap (True);
       Panel.Pack_Start (Status_Label, False, False, 0);
+
+      Gtk_New (Mini);
+      Mini.Set_Size_Request (-1, 130);
+      Mini.Add_Events (Button_Press_Mask or Button1_Motion_Mask);
+      Mini.On_Draw (Mini_Draw'Access);
+      Mini.On_Button_Press_Event (Mini_Press'Access);
+      Mini.On_Motion_Notify_Event (Mini_Motion'Access);
+      Panel.Pack_Start (Mini, False, False, 0);
+      Scroll.Get_Hadjustment.On_Value_Changed (Scrolled'Access);
+      Scroll.Get_Vadjustment.On_Value_Changed (Scrolled'Access);
 
       Gtk_New (Frame, "Selected unit");
       Gtk_New (Unit_Label);

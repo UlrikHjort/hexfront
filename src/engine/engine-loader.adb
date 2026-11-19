@@ -1,6 +1,8 @@
 with Ada.Text_IO;              use Ada.Text_IO;
 with Ada.Directories;          use Ada.Directories;
 with Ada.Command_Line;
+with Ada.Environment_Variables;
+with GNAT.OS_Lib;            use type GNAT.OS_Lib.String_Access;
 with Ada.Strings.Fixed;        use Ada.Strings.Fixed;
 with Ada.Characters.Handling;  use Ada.Characters.Handling;
 with Ada.Containers.Generic_Array_Sort;
@@ -16,18 +18,49 @@ package body Engine.Loader is
    --------------
 
    function Data_Dir return String is
-      Exe_Dir : constant String :=
-        Containing_Directory (Ada.Command_Line.Command_Name);
+
+      --  Directory of the running program, also when started via PATH.
+      function Exe_Dir return String is
+         Cmd  : constant String := Ada.Command_Line.Command_Name;
+         Path : GNAT.OS_Lib.String_Access :=
+           GNAT.OS_Lib.Locate_Exec_On_Path (Cmd);
+      begin
+         if Path = null then
+            return Containing_Directory (Cmd);
+         end if;
+         declare
+            Dir : constant String := Containing_Directory (Path.all);
+         begin
+            GNAT.OS_Lib.Free (Path);
+            return Dir;
+         end;
+      exception
+         when others =>
+            return ".";
+      end Exe_Dir;
+
+      function Ok (D : String) return Boolean is
+        (D'Length > 0 and then Exists (D & "/scenarios"));
    begin
-      if Exists ("data/scenarios") then
-         return "data";
-      elsif Exists (Exe_Dir & "/../data/scenarios") then
-         return Exe_Dir & "/../data";
-      elsif Exists (Exe_Dir & "/data/scenarios") then
-         return Exe_Dir & "/data";
-      else
+      if Ada.Environment_Variables.Exists ("HEXFRONT_DATA")
+        and then Ok (Ada.Environment_Variables.Value ("HEXFRONT_DATA"))
+      then
+         return Ada.Environment_Variables.Value ("HEXFRONT_DATA");
+      elsif Ok ("data") then
          return "data";
       end if;
+      declare
+         E : constant String := Exe_Dir;
+      begin
+         if Ok (E & "/../data") then
+            return E & "/../data";
+         elsif Ok (E & "/data") then
+            return E & "/data";
+         elsif Ok (E & "/../share/hexfront") then
+            return E & "/../share/hexfront";
+         end if;
+      end;
+      return "data";
    exception
       when others =>
          return "data";
@@ -216,6 +249,8 @@ package body Engine.Loader is
                                           G.Era.Square_Bonus);
                G.Era.Close_Armor_Penalty :=
                  Int (L, "close_armor_penalty", G.Era.Close_Armor_Penalty);
+               G.Era.Supply_Range :=
+                 Int (L, "supply_range", G.Era.Supply_Range);
             elsif KW = "unit" then
                declare
                   T : Unit_Type;
@@ -247,7 +282,7 @@ package body Engine.Loader is
                   T.Spot := Int
                     (L, "spot",
                      (case T.Class is
-                         when Recon | Fighter | Bomber => 3,
+                         when Recon | Fighter | Bomber | Warship => 3,
                          when Cavalry => 3,
                          when others => 2));
                   T.Max_Ammo    := Int (L, "ammo", 8);
@@ -418,6 +453,59 @@ package body Engine.Loader is
                         Append (H.Text, ASCII.LF & To_String (L.Rest));
                         G.Hints.Replace_Element (G.Hints.Last_Index, H);
                      end;
+                  elsif KW = "climate" then
+                     --  climate fair|temperate|wet|winter
+                     declare
+                        C : constant String := To_Lower (To_String (L.Rest));
+                     begin
+                        G.Climate :=
+                          (if C = "temperate" then Temperate
+                           elsif C = "wet" then Wet
+                           elsif C = "winter" then Winter
+                           elsif C = "fair" then Always_Fair
+                           else Always_Fair);
+                        if C not in "fair" | "temperate" | "wet" | "winter"
+                        then
+                           Fail ("unknown climate " & C);
+                        end if;
+                     end;
+                  elsif KW = "weather" then
+                     --  weather turn=N fair|overcast|rain|snow|fog
+                     declare
+                        P : Planned_Weather;
+                        K : constant String :=
+                          (if L.Count >= 2
+                           then To_Lower (To_String (L.Tokens (2))) else "");
+                     begin
+                        P.Turn := Int (L, "turn", 1);
+                        if K = "fair" then
+                           P.Kind := Fair;
+                        elsif K = "overcast" then
+                           P.Kind := Overcast;
+                        elsif K = "rain" then
+                           P.Kind := Rain;
+                        elsif K = "snow" then
+                           P.Kind := Snow;
+                        elsif K = "fog" then
+                           P.Kind := Mist;
+                        else
+                           Fail ("weather needs turn=N and a kind");
+                        end if;
+                        G.Weather_Plan.Append (P);
+                     end;
+                  elsif KW = "supply" then
+                     --  supply side=N edge=west|east|north|south|none
+                     declare
+                        S : constant Player_Side :=
+                          Player_Side (Int (L, "side", 1));
+                        E : constant String := To_Lower (Value (L, "edge"));
+                     begin
+                        G.Supply_Edge (S) :=
+                          (if E = "west" then West elsif E = "east" then East
+                           elsif E = "north" then North
+                           elsif E = "south" then South
+                           elsif E = "none" then No_Edge else Auto);
+                     end;
                   elsif KW = "turns" then
                      G.Max_Turns := Int (To_String (L.Tokens (1)));
                   elsif KW = "attacker" then
@@ -542,6 +630,7 @@ package body Engine.Loader is
       if G.Units.Is_Empty then
          raise Load_Error with Path & ": no units";
       end if;
+      Resolve_Supply_Edges;
       if Start then
          Start_Game;
       else

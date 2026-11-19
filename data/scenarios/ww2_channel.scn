@@ -6,6 +6,7 @@ era ww2
 turns 18
 attacker 1
 first 1
+climate temperate
 side 1 name=Wehrmacht color=96,104,88 control=human prestige=100 income=30
 side 2 name=Allied_Forces color=150,110,60 control=ai prestige=100 income=15
 map 30 16

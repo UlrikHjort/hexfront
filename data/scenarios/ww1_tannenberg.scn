@@ -1,0 +1,98 @@
+title Tannenberg (1914)
+description August 1914. The Russian Second Army has marched deep into East Prussia,
+description its supply columns trailing far behind. Your corps have come round by
+description rail to both of its flanks. Close the trap among the lakes and forests:
+description take Allenstein, Hohenstein, Neidenburg and Soldau. Cut the roads to the
+description south and the enemy will starve. 14 turns.
+era ww1
+turns 14
+attacker 1
+first 1
+climate temperate
+weather turn=1 fair
+weather turn=2 fair
+supply side=1 edge=north
+supply side=2 edge=south
+side 1 name=German_Army color=110,120,130 control=human prestige=200 income=30
+side 2 name=Russian_Army color=70,120,80 control=ai prestige=80 income=10
+hint turn=1 ENCIRCLEMENT
+more
+more The Russians draw their supply from the south edge of the map. Drive your
+more flanks behind them - to Soldau in the west and Neidenburg in the south -
+more and their whole army will be cut off: weaker in battle and wasting away
+more each turn. Press S to watch their supply lines shrink.
+map 26 16
+. f . . . . f . . . f h f f f . = . . . . = . = f =
+. . . . . . . . f . . . f . f . = f f = t . = . = .
+A . . . . . w w f . . . . f . = = . f = . . . . . f
+. . . f . . w w . . f . . f f = h = = . . w w w . s
+. . . . . . w w . . . . f . f C f = . . . w w w . .
+= = = = t = . . s f f . . . = = = h . . s . f . . .
+. f . . f = = = . h . . . w w . . . f . = . f f . .
+. . . f f h = = = = . . = w w . h f f f = . s . . .
+f f . s . . h = . . = t = . h . f w w = = f f . . .
+. . w w . . f = t . . . . . h . . w w = . f . . . f
+s f w w f h . = = = . . . . . . . w w = . . . . f .
+. f . . . . = . . w . f f h f . . . . t f f . w w .
+. s . . . = = . f w = . . h . . . = = f f h . w w .
+. f t s s = . f . . = = f = = = = . . . . . . . h .
+. . . h t . f . . f f t = . . . . f f . . . . f f f
+. . . . . . f . . . . f = = A = s . . . f . f . . .
+territory side=2 cols=0-25
+territory side=1 cols=0-8
+place at=4,5 name=Osterode owner=1
+place at=8,9 name=Tannenberg owner=1
+place at=2,13 name=Lautenburg owner=1
+place at=20,1 name=Bischofsburg owner=1
+place at=0,2 name=Airfield owner=1
+place at=15,4 name=Allenstein owner=2 victory
+place at=11,8 name=Hohenstein owner=2 victory
+place at=11,14 name=Neidenburg owner=2 victory
+place at=4,14 name=Soldau owner=2 victory
+place at=19,11 name=Ortelsburg owner=2
+place at=14,15 name=Airfield owner=2
+reinforce turn=4 side=1 type=infantry at=25,1
+reinforce turn=4 side=1 type=infantry at=24,0
+reinforce turn=4 side=1 type=fieldgun at=23,0
+reinforce turn=5 side=2 type=infantry at=15,15
+reinforce turn=5 side=2 type=infantry at=17,15
+unit side=1 type=infantry at=3,4
+unit side=1 type=infantry at=3,6
+unit side=1 type=infantry at=5,7
+unit side=1 type=infantry at=6,9
+unit side=1 type=infantry at=4,11
+unit side=1 type=storm at=5,8
+unit side=1 type=mg at=4,6
+unit side=1 type=fieldgun at=2,5
+unit side=1 type=fieldgun at=3,8
+unit side=1 type=howitzer at=1,6
+unit side=1 type=cavalry at=2,12
+unit side=1 type=infantry at=1,13
+unit side=1 type=infantry at=15,1
+unit side=1 type=infantry at=17,2
+unit side=1 type=infantry at=19,2
+unit side=1 type=mg at=18,1
+unit side=1 type=fieldgun at=16,0
+unit side=1 type=cavalry at=21,1
+unit side=1 type=infantry at=13,1
+unit side=1 type=scout at=0,2
+unit side=2 type=infantry at=14,4
+unit side=2 type=infantry at=15,5
+unit side=2 type=infantry at=11,7
+unit side=2 type=infantry at=10,8
+unit side=2 type=infantry at=12,9
+unit side=2 type=infantry at=9,7
+unit side=2 type=infantry at=11,13
+unit side=2 type=infantry at=5,13
+unit side=2 type=mg at=12,8
+unit side=2 type=mg at=13,5
+unit side=2 type=fieldgun at=13,9
+unit side=2 type=fieldgun at=12,11
+unit side=2 type=cavalry at=17,6
+unit side=2 type=cavalry at=6,14
+unit side=2 type=infantry at=16,12
+unit side=2 type=infantry at=19,12
+unit side=2 type=armcar at=14,13
+unit side=2 type=infantry at=15,3
+unit side=2 type=infantry at=4,13
+unit side=2 type=scout at=14,15

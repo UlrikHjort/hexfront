@@ -5,7 +5,7 @@ package Engine.Terrain is
      (Clear, Road, Forest, Hills, Mountain, River, Swamp,
       Town, City, Fortress, Water, Trench, Airfield);
 
-   type Move_Class is (Foot, Horse, Wheeled, Tracked, Static, Air);
+   type Move_Class is (Foot, Horse, Wheeled, Tracked, Static, Air, Naval);
 
    Impassable : constant := 99;
 

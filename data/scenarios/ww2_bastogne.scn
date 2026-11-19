@@ -1,0 +1,116 @@
+title Bastogne (1944)
+description December 1944. Under cover of fog and snow, three German armies have
+description burst out of the Eifel into the thinly held Ardennes. Hold the road
+description junctions of St Vith, Houffalize and Bastogne and keep the enemy from
+description Marche on the road to the Meuse. Low cloud grounds your air forces -
+description until the skies clear.
+description Relief from the south is on its way. 18 turns.
+era ww2
+turns 18
+attacker 2
+first 2
+climate winter
+weather turn=1 fog
+weather turn=2 fog
+weather turn=3 snow
+weather turn=4 snow
+weather turn=5 overcast
+weather turn=6 snow
+weather turn=7 fair
+weather turn=8 fair
+weather turn=9 fair
+supply side=1 edge=west
+supply side=2 edge=east
+side 1 name=Allied_Forces color=175,150,95 control=human prestige=150 income=30
+side 2 name=Wehrmacht color=96,104,88 control=ai prestige=400 income=45
+hint turn=1 THE BULGE
+more
+more This time you defend. The enemy needs ALL FOUR objectives; you win by
+more holding any one of them when time runs out. Fog and snow keep both air
+more forces on the ground, but the forecast promises clear skies within a
+more week. Every hex the enemy advances stretches his supply line: units
+more cut off from the east edge will wither.
+hint turn=7 The skies are clearing! Your fighter-bombers can finally fly.
+hint turn=8 Third Army's armoured columns are attacking from the south!
+map 28 18
+f ~ . f . . . . . ~ . f . . f . . f . . . f h . f ~ . h
+. ~ f f f h . f f ~ . f f f f . . . . . h . h . . ~ f h
+. ~ . h f . f . . ~ f . . . f f . h f . . f . f f ~ . t
+f ~ . . A . . . f ~ f f . . f f f f . . . h f f f ~ h f
+h ~ f f . . . . . ~ f f f . f . . . f f h t . = f ~ f =
+f . ~ . f f f f . . ~ . . f f . . = . = = h = . ~ f = .
+. . ~ f h f f . h = ~ = . = . t = f = = = f . . ~ f h .
+f . ~ = f = = = t = ~ . = f = = h = = f . f . f ~ f . .
+. h t = = h f . f f ~ = . . . = f = f f h f . . ~ f . .
+f . ~ = . . f h f . ~ = . . = = = h f . f h f f ~ . f .
+h f ~ . = . h . . ~ ~ f = = = = . f . . . . f h ~ . h f
+h f ~ . = = . f . ~ . = . = C = = = . = . f . . ~ . f .
+. ~ ~ . f = h = f ~ = . = f = . . f = h t = = = ~ = = =
+f ~ . f f f t f = ~ f f . f = f . f f f h f f h ~ ~ . f
+f ~ . f . . . . f ~ . . . = = f h . . f . . f . f ~ . f
+. ~ f . f f f . ~ f . f . = . f . . h . . f . . f ~ A .
+f ~ . f f A f . ~ f . f . = . . h . . f . . . . . ~ f .
+. ~ . . . f . . ~ f f f h = f . . f . f . . . . f ~ . f
+territory side=1 cols=0-25
+territory side=2 cols=26-27
+place at=21,4 name=St_Vith owner=1 victory
+place at=15,6 name=Houffalize owner=1 victory
+place at=14,11 name=Bastogne owner=1 victory
+place at=2,8 name=Dinant owner=1
+place at=8,7 name=Marche owner=1 victory
+place at=20,12 name=Wiltz owner=1
+place at=6,13 name=St_Hubert owner=1
+place at=4,3 name=Airfield owner=1
+place at=5,16 name=Airfield owner=1
+place at=27,2 name=Prum owner=2
+place at=26,15 name=Airfield owner=2
+reinforce turn=8 side=1 type=medtank at=12,17
+reinforce turn=8 side=1 type=medtank at=15,17
+reinforce turn=8 side=1 type=infantry at=13,17
+reinforce turn=8 side=1 type=fieldart at=14,17
+reinforce turn=8 side=1 type=infantry at=2,10
+reinforce turn=8 side=1 type=medtank at=1,6
+reinforce turn=4 side=2 type=heavytank at=27,4
+reinforce turn=4 side=2 type=infantry at=27,12
+unit side=1 type=infantry at=20,5 core
+unit side=1 type=infantry at=14,11 core
+unit side=1 type=infantry at=15,6 core
+unit side=1 type=infantry at=20,12 core
+unit side=1 type=medtank at=21,3 core
+unit side=1 type=pioneers at=14,12 core
+unit side=1 type=fieldart at=13,10 core
+unit side=1 type=atgun at=8,7 core
+unit side=1 type=armcar at=22,8 core
+unit side=1 type=fighter at=4,3 core
+unit side=1 type=fighter at=5,16 core
+unit side=1 type=divebomb at=8,7 core
+unit side=2 type=heavytank at=26,4
+unit side=2 type=heavytank at=26,12
+unit side=2 type=medtank at=26,6
+unit side=2 type=medtank at=26,10
+unit side=2 type=medtank at=27,8
+unit side=2 type=lighttank at=27,3
+unit side=2 type=infantry at=26,2
+unit side=2 type=infantry at=26,7
+unit side=2 type=infantry at=26,9
+unit side=2 type=infantry at=26,13
+unit side=2 type=infantry at=27,5
+unit side=2 type=infantry at=27,11
+unit side=2 type=pioneers at=26,5
+unit side=2 type=pioneers at=26,11
+unit side=2 type=fieldart at=27,6
+unit side=2 type=fieldart at=27,10
+unit side=2 type=heavyart at=27,9
+unit side=2 type=armcar at=26,3
+unit side=2 type=armcar at=26,14
+unit side=2 type=atgun at=27,13
+unit side=2 type=flak at=27,7
+unit side=2 type=infantry at=27,14
+unit side=2 type=infantry at=25,15
+unit side=2 type=medtank at=27,15
+unit side=2 type=infantry at=26,1
+unit side=2 type=fieldart at=27,1
+unit side=2 type=pioneers at=25,3
+unit side=2 type=infantry at=27,16
+unit side=2 type=fighter at=26,15
+unit side=2 type=divebomb at=27,2

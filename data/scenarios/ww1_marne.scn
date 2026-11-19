@@ -7,8 +7,10 @@ era ww1
 turns 18
 attacker 1
 first 1
+climate fair
 side 1 name=German_Army color=110,120,130 control=human prestige=150 income=40
 side 2 name=Allied_Army color=165,135,75 control=ai prestige=40 income=10
+hint turn=7 A second wave of assault divisions is moving up behind the ridge.
 hint turn=10 American divisions are arriving at Chateau-Thierry!
 more Fresh troops will stiffen the Allied line on the Marne - push hard.
 map 24 16
@@ -39,6 +41,9 @@ place at=2,12 name=Villers owner=2
 place at=16,15 name=Airfield owner=2
 reinforce turn=10 side=2 type=infantry at=8,15
 reinforce turn=10 side=2 type=mg at=7,15
+reinforce turn=7 side=1 type=storm at=11,0
+reinforce turn=7 side=1 type=storm at=13,0
+reinforce turn=7 side=1 type=fieldgun at=12,1
 unit side=1 type=storm at=3,2 core
 unit side=1 type=storm at=6,2 core
 unit side=1 type=storm at=9,2 core

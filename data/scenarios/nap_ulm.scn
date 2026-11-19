@@ -7,6 +7,7 @@ era napoleonic
 turns 14
 attacker 1
 first 1
+climate wet
 side 1 name=Grande_Armee color=50,70,160 control=human prestige=200 income=20
 side 2 name=Austrian_Army color=225,225,215 control=ai prestige=150 income=20
 map 26 16

@@ -1,0 +1,36 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ada toolchain and GtkAda
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnat gprbuild libgtkada20-dev
+
+      - name: Build the game
+        run: make
+
+      - name: Self-test (every scenario AI vs AI, save/load, editor, campaigns)
+        run: make test
+
+      - name: Headless render check
+        run: |
+          make render
+          ./bin/render_png data/scenarios/tutorial.scn tutorial.png "sil,mini"
+          ./bin/render_png data/scenarios/ww2_normandy.scn normandy.png "turns=2,supply"
+
+      - name: Test install
+        run: make install PREFIX=/tmp/hexfront-install && ls -R /tmp/hexfront-install | head -40
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: renders
+          path: "*.png"

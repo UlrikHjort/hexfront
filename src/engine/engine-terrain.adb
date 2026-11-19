@@ -5,21 +5,21 @@ package body Engine.Terrain is
    type Cost_Row is array (Move_Class) of Natural;
    type Cost_Table is array (Terrain_Kind) of Cost_Row;
 
-   --                       Foot Horse Wheel Track Static Air
+   --                       Foot Horse Wheel Track Static Air Naval
    Costs : constant Cost_Table :=
-     (Clear    => (1, 1, 2, 1, I, 1),
-      Road     => (1, 1, 1, 1, I, 1),
-      Forest   => (2, 2, 4, 3, I, 1),
-      Hills    => (2, 2, 3, 2, I, 1),
-      Mountain => (3, 4, I, I, I, 1),
-      River    => (3, 3, I, 4, I, 1),
-      Swamp    => (3, 3, I, 4, I, 1),
-      Town     => (1, 1, 1, 1, I, 1),
-      City     => (1, 1, 1, 1, I, 1),
-      Fortress => (1, 1, 1, 1, I, 1),
-      Water    => (I, I, I, I, I, 1),
-      Trench   => (2, 3, 3, 2, I, 1),
-      Airfield => (1, 1, 1, 1, I, 1));
+     (Clear    => (1, 1, 2, 1, I, 1, I),
+      Road     => (1, 1, 1, 1, I, 1, I),
+      Forest   => (2, 2, 4, 3, I, 1, I),
+      Hills    => (2, 2, 3, 2, I, 1, I),
+      Mountain => (3, 4, I, I, I, 1, I),
+      River    => (3, 3, I, 4, I, 1, I),
+      Swamp    => (3, 3, I, 4, I, 1, I),
+      Town     => (1, 1, 1, 1, I, 1, I),
+      City     => (1, 1, 1, 1, I, 1, I),
+      Fortress => (1, 1, 1, 1, I, 1, I),
+      Water    => (I, I, I, I, I, 1, 1),
+      Trench   => (2, 3, 3, 2, I, 1, I),
+      Airfield => (1, 1, 1, 1, I, 1, I));
 
    function Move_Cost (T : Terrain_Kind; M : Move_Class) return Natural is
      (Costs (T) (M));

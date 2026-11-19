@@ -56,10 +56,14 @@ package body Engine.Game is
       return 0;
    end Find_Type;
 
+   --  Ships do not exert a zone of control on land.
+   function Zoc_Enemy (U : Natural; Side : Player_Side) return Boolean is
+     (Is_Enemy (U, Side) and then not Is_Naval (U));
+
    function Enemy_Adjacent (H : Hex; Side : Player_Side) return Boolean is
    begin
       for D in Direction loop
-         if Is_Enemy (Unit_At (Neighbor (H, D)), Side) then
+         if Zoc_Enemy (Unit_At (Neighbor (H, D)), Side) then
             return True;
          end if;
       end loop;
@@ -70,7 +74,8 @@ package body Engine.Game is
       Un : constant Unit      := G.Units (U);
       T  : constant Unit_Type := G.Types (Un.Kind);
    begin
-      if not Un.Alive or else Is_Air (T) or else T.Mover = Static then
+      if not Un.Alive or else Is_Air (T) or else T.Mover in Static | Naval
+      then
          return False;
       end if;
       for D in Direction loop
@@ -105,6 +110,13 @@ package body Engine.Game is
       end loop;
    end Mark_Seen;
 
+   --  Sight radius of a unit type in the current weather.
+   function Eff_Spot (T : Unit_Type) return Natural is
+     (case G.Weather is
+         when Fair | Overcast => T.Spot,
+         when Rain | Snow     => Natural'Max (1, T.Spot - 1),
+         when Mist            => 1);
+
    procedure Update_Vision is
    begin
       for S in Player_Side loop
@@ -112,7 +124,7 @@ package body Engine.Game is
       end loop;
       for U of G.Units loop
          if U.Alive then
-            Mark_Seen (U.Side, U.Pos, G.Types (U.Kind).Spot);
+            Mark_Seen (U.Side, U.Pos, Eff_Spot (G.Types (U.Kind)));
          end if;
       end loop;
       for C in 0 .. G.Cols - 1 loop
@@ -133,6 +145,7 @@ package body Engine.Game is
             end loop;
          end if;
       end loop;
+      Update_Supply;
    end Update_Vision;
 
    function Visible (U : Unit_Index; By : Player_Side) return Boolean is
@@ -170,12 +183,214 @@ package body Engine.Game is
                                   return Boolean is
    begin
       for D in Direction loop
-         if Known_Enemy (Unit_At (Neighbor (H, D)), Side) then
+         if Known_Enemy (Unit_At (Neighbor (H, D)), Side)
+           and then not Is_Naval (Unit_At (Neighbor (H, D)))
+         then
             return True;
          end if;
       end loop;
       return False;
    end Known_Enemy_Adjacent;
+
+
+   -------------
+   -- Weather --
+   -------------
+
+   function Weather_Name (W : Weather_Kind) return String is
+     (case W is
+         when Fair     => "Fair",
+         when Overcast => "Overcast",
+         when Rain     => "Rain",
+         when Snow     => "Snow",
+         when Mist     => "Fog");
+
+   function Weather_Effects (W : Weather_Kind) return String is
+     (case W is
+         when Fair     => "no effects",
+         when Overcast => "air attacks weakened",
+         when Rain     => "aircraft grounded, mud slows vehicles off-road",
+         when Snow     => "aircraft grounded, all movement slowed off-road",
+         when Mist     => "aircraft grounded, sight 1 hex, poor ranged fire");
+
+   function Climate_Name (C : Climate_Kind) return String is
+     (case C is
+         when Always_Fair => "fair",
+         when Temperate   => "temperate",
+         when Wet         => "wet",
+         when Winter      => "winter");
+
+   function Weather_Penalty (T : Terrain_Kind; M : Move_Class) return Natural
+   is
+   begin
+      if M in Air | Naval | Static
+        or else T in Road | Town | City | Fortress | Airfield
+        or else Move_Cost (T, M) >= Impassable
+      then
+         return 0;
+      end if;
+      case G.Weather is
+         when Rain =>
+            return (if M in Wheeled | Tracked then 1 else 0);
+         when Snow =>
+            return 1;
+         when others =>
+            return 0;
+      end case;
+   end Weather_Penalty;
+
+   function Roll_Weather (Turn : Positive) return Weather_Kind is
+      R : Float;
+   begin
+      for P of G.Weather_Plan loop
+         if P.Turn = Turn then
+            return P.Kind;
+         end if;
+      end loop;
+      R := FR.Random (Gen);
+      case G.Climate is
+         when Always_Fair =>
+            return Fair;
+         when Temperate =>
+            return (if R < 0.60 then Fair elsif R < 0.85 then Overcast
+                    else Rain);
+         when Wet =>
+            return (if R < 0.30 then Fair elsif R < 0.60 then Overcast
+                    elsif R < 0.92 then Rain else Mist);
+         when Winter =>
+            return (if R < 0.35 then Fair elsif R < 0.60 then Overcast
+                    elsif R < 0.92 then Snow else Mist);
+      end case;
+   end Roll_Weather;
+
+   procedure Announce_Weather is
+   begin
+      Log ("Weather: " & Weather_Name (G.Weather) & " ("
+           & Weather_Effects (G.Weather) & "). Forecast: "
+           & Weather_Name (G.Forecast));
+   end Announce_Weather;
+
+   ------------
+   -- Supply --
+   ------------
+
+   function Supply_Name (L : Supply_Level) return String is
+     (case L is
+         when Supplied   => "in supply",
+         when Low_Supply => "low supply",
+         when Cut_Off    => "OUT OF SUPPLY");
+
+   function Edge_Name (E : Edge_Kind) return String is
+     (case E is
+         when Auto    => "auto",
+         when No_Edge => "none",
+         when West    => "west",
+         when East    => "east",
+         when North   => "north",
+         when South   => "south");
+
+   function On_Edge (H : Hex; E : Edge_Kind) return Boolean is
+     (case E is
+         when West    => H.Col = 0,
+         when East    => H.Col = G.Cols - 1,
+         when North   => H.Row = 0,
+         when South   => H.Row = G.Rows - 1,
+         when others  => False);
+
+   procedure Update_Supply is
+      Limit : constant Natural := 2 * G.Era.Supply_Range;
+   begin
+      for S in Player_Side loop
+         declare
+            Grid : Int_Grid renames G.Supply (S);
+         begin
+            Grid := (others => (others => -1));
+            --  Sources.
+            for C in 0 .. G.Cols - 1 loop
+               for R in 0 .. G.Rows - 1 loop
+                  declare
+                     H  : constant Hex := (C, R);
+                     Ce : constant Cell := G.Cells (C, R);
+                  begin
+                     if not Is_Enemy (Ce.Occupant, S)
+                       and then ((Ce.Owner = S
+                                  and then Is_Capturable (Ce.Terrain))
+                                 or else (On_Edge (H, G.Supply_Edge (S))
+                                          and then Move_Cost (Ce.Terrain, Foot)
+                                                   < Impassable))
+                     then
+                        Grid (C, R) := 0;
+                     end if;
+                  end;
+               end loop;
+            end loop;
+            --  Spread by cost levels, like Compute_Reach.
+            for Level in 0 .. Limit loop
+               for C in 0 .. G.Cols - 1 loop
+                  for R in 0 .. G.Rows - 1 loop
+                     if Grid (C, R) = Level then
+                        declare
+                           H   : constant Hex := (C, R);
+                           Occ : constant Natural := Unit_At (H);
+                        begin
+                           if (Occ /= No_Unit and then G.Units (Occ).Side = S)
+                             or else not Enemy_Adjacent (H, S)
+                           then
+                              for D in Direction loop
+                                 declare
+                                    N : constant Hex := Neighbor (H, D);
+                                    Step, New_Cost : Natural;
+                                 begin
+                                    if In_Map (N)
+                                      and then not Is_Enemy (Unit_At (N), S)
+                                    then
+                                       Step :=
+                                         Move_Cost (Terrain_At (N), Foot);
+                                       New_Cost := Level + Step;
+                                       if Step < Impassable
+                                         and then New_Cost <= Limit
+                                         and then (Grid (N.Col, N.Row) < 0
+                                                   or else Grid (N.Col, N.Row)
+                                                           > New_Cost)
+                                       then
+                                          Grid (N.Col, N.Row) := New_Cost;
+                                       end if;
+                                    end if;
+                                 end;
+                              end loop;
+                           end if;
+                        end;
+                     end if;
+                  end loop;
+               end loop;
+            end loop;
+         end;
+      end loop;
+   end Update_Supply;
+
+   function Supply_At (H : Hex; Side : Player_Side) return Supply_Level is
+      V : Integer;
+   begin
+      if not In_Map (H) then
+         return Cut_Off;
+      end if;
+      V := G.Supply (Side) (H.Col, H.Row);
+      if V < 0 then
+         return Cut_Off;
+      elsif V <= G.Era.Supply_Range then
+         return Supplied;
+      else
+         return Low_Supply;
+      end if;
+   end Supply_At;
+
+   --  Aircraft, ships and fortifications carry their own stocks.
+   function Unit_Supply (Un : Unit) return Supply_Level is
+     (if G.Types (Un.Kind).Mover in Air | Naval | Static then Supplied
+      else Supply_At (Un.Pos, Un.Side));
+
+   function Supply_Of (U : Unit_Index) return Supply_Level is
+     (Unit_Supply (G.Units (U)));
 
    --------------
    -- Movement --
@@ -198,7 +413,7 @@ package body Engine.Game is
       if T.Max_Fuel > 0 then
          Budget := Natural'Min (Budget, Un.Fuel);
       end if;
-      if T.Mover = Static then
+      if T.Mover = Static or else (Flying and then Grounded) then
          return;
       end if;
 
@@ -226,7 +441,9 @@ package body Engine.Game is
                                           or else not Known_Enemy
                                             (Unit_At (N), Un.Side))
                               then
-                                 Step := Move_Cost (Terrain_At (N), T.Mover);
+                                 Step := Move_Cost (Terrain_At (N), T.Mover)
+                                   + Weather_Penalty (Terrain_At (N),
+                                                      T.Mover);
                                  New_Cost := Level + Step;
                                  if Step < Impassable
                                    and then New_Cost <= Budget
@@ -362,7 +579,7 @@ package body Engine.Game is
             if O = No_Unit then
                Reached := N;
             end if;
-            Mark_Seen (Un.Side, N, T.Spot);
+            Mark_Seen (Un.Side, N, Eff_Spot (T));
             if not Flying and then I > 1 and then O = No_Unit
               and then Enemy_Adjacent (N, Un.Side)
             then
@@ -419,7 +636,7 @@ package body Engine.Game is
       end if;
       Un.Has_Moved := True;
       Un.Entrench  := 0;
-      if not Flying then
+      if not Flying and then not Is_Naval (T) then
          Capture (Reached, Un.Side);
       end if;
       Update_Vision;
@@ -495,6 +712,10 @@ package body Engine.Game is
       if Dist = 0 and then Is_Air (ATy) = Is_Air (DTy) then
          return False;
       end if;
+      --  No sorties in rain, snow or fog.
+      if Is_Air (ATy) and then Grounded then
+         return False;
+      end if;
       --  Guns must be emplaced: no firing after a move.
       if ATy.Class = Artillery and then (AU.Has_Moved or else From /= AU.Pos)
       then
@@ -532,6 +753,18 @@ package body Engine.Game is
       Dist : constant Natural      := Distance (From, D.Pos);
       V    : Integer := Attack_Stat (ATy, DTy.Target) + Exp_Level (A);
    begin
+      if Unit_Supply (A) = Cut_Off then
+         V := V - 1;
+      end if;
+      if Is_Air (ATy) and then G.Weather = Overcast then
+         V := V - 2;
+      elsif Dist >= 2 then
+         --  Observed fire suffers in poor visibility.
+         V := V - (case G.Weather is
+                      when Fair | Overcast => 0,
+                      when Rain | Snow     => 1,
+                      when Mist            => 2);
+      end if;
       if Dist = 1 and then not Is_Air (ATy) and then not Is_Air (DTy) then
          if ATy.Mover in Wheeled | Tracked and then Is_Close (DTer) then
             V := V - G.Era.Close_Armor_Penalty;
@@ -555,6 +788,9 @@ package body Engine.Game is
       DTy : constant Unit_Type := G.Types (D.Kind);
       V   : Integer := DTy.Defense + Exp_Level (D);
    begin
+      if In_Place and then Unit_Supply (D) = Cut_Off then
+         V := V - 1;
+      end if;
       if In_Place and then not Is_Air (DTy) then
          if Is_Air (ATy) then
             V := V + Defense_Bonus (Terrain_At (D.Pos)) / 2;
@@ -845,6 +1081,21 @@ package body Engine.Game is
       Un : constant Unit := G.Units (U);
       C  : constant Cell := G.Cells (Un.Pos.Col, Un.Pos.Row);
    begin
+      if Is_Naval (U) then
+         --  Ships replenish next to an own port.
+         for D in Direction loop
+            declare
+               N : constant Hex := Neighbor (Un.Pos, D);
+            begin
+               if In_Map (N) and then G.Cells (N.Col, N.Row).Owner = Un.Side
+                 and then Terrain_At (N) in Town | City | Fortress
+               then
+                  return True;
+               end if;
+            end;
+         end loop;
+         return False;
+      end if;
       return Is_Capturable (C.Terrain) and then C.Owner = Un.Side;
    end On_Own_Base;
 
@@ -854,15 +1105,17 @@ package body Engine.Game is
    begin
       return Un.Alive and then Un.Side = G.Current
         and then not Un.Has_Moved and then not Un.Has_Attacked
-        and then (not Is_Air (T) or else On_Own_Base (U))
+        and then (T.Mover not in Air | Naval or else On_Own_Base (U))
         and then not Is_Surrounded (U)
+        and then Supply_Of (U) /= Cut_Off
         and then (Un.Ammo < T.Max_Ammo or else Un.Fuel < T.Max_Fuel);
    end Can_Resupply;
 
    procedure Resupply (U : Unit_Index) is
       Un  : Unit renames G.Units (U);
       T   : constant Unit_Type := G.Types (Un.Kind);
-      Cut : constant Boolean := Enemy_Adjacent (Un.Pos, Un.Side);
+      Cut : constant Boolean := Enemy_Adjacent (Un.Pos, Un.Side)
+        or else Supply_Of (U) = Low_Supply;
    begin
       if not Can_Resupply (U) then
          return;
@@ -879,18 +1132,19 @@ package body Engine.Game is
       Un.Has_Attacked := True;
       Un.Moves_Left   := 0;
       Log (Unit_Name (U) & " resupplied"
-           & (if Cut then " (under pressure, partial)" else ""));
+           & (if Cut then " (partial: under pressure or low supply)"
+              else ""));
       Raise_Event ("resupply");
    end Resupply;
 
+   --  Strength points a reinforcement adds; fewer on low supply.
+   function Reinforce_Gain (U : Unit_Index) return Natural is
+     (Natural'Min ((if Supply_Of (U) = Low_Supply then 2 else 5),
+                   Max_Strength - Natural'Min (Max_Strength,
+                                               G.Units (U).Strength)));
+
    function Reinforce_Cost (U : Unit_Index) return Natural is
-      Un   : constant Unit := G.Units (U);
-      Gain : constant Natural :=
-        Natural'Min (5, Max_Strength - Natural'Min (Max_Strength,
-                                                     Un.Strength));
-   begin
-      return Gain * Type_Of (U).Cost / 10;
-   end Reinforce_Cost;
+     (Reinforce_Gain (U) * Type_Of (U).Cost / 10);
 
    function Can_Reinforce (U : Unit_Index) return Boolean is
       Un : constant Unit := G.Units (U);
@@ -899,7 +1153,8 @@ package body Engine.Game is
         and then not Un.Has_Moved and then not Un.Has_Attacked
         and then Un.Strength < Max_Strength
         and then not Is_Surrounded (U)
-        and then (if Is_Air (U) then On_Own_Base (U)
+        and then Supply_Of (U) /= Cut_Off
+        and then (if Is_Air (U) or else Is_Naval (U) then On_Own_Base (U)
                   else not Enemy_Adjacent (Un.Pos, Un.Side))
         and then Reinforce_Cost (U) <= G.Sides (Un.Side).Prestige;
    end Can_Reinforce;
@@ -912,7 +1167,7 @@ package body Engine.Game is
          return;
       end if;
       Undo.Valid := False;
-      Gain := Natural'Min (5, Max_Strength - Un.Strength);
+      Gain := Reinforce_Gain (U);
       G.Sides (Un.Side).Prestige :=
         G.Sides (Un.Side).Prestige - Reinforce_Cost (U);
       --  Green replacements dilute experience.
@@ -1148,9 +1403,31 @@ package body Engine.Game is
       Undo.Valid := False;
       G.Sides (S).Prestige := G.Sides (S).Prestige + Income_Of (S);
       Arrivals (S);
+      Update_Vision;
+      for I in G.Units.First_Index .. G.Units.Last_Index loop
+         declare
+            U : Unit renames G.Units (I);
+         begin
+            if U.Alive and then U.Side = S then
+               --  Attrition: units cut off for more than a turn wither.
+               if Unit_Supply (U) = Cut_Off then
+                  U.Cut_Turns := U.Cut_Turns + 1;
+                  if U.Cut_Turns >= 2 and then U.Strength > 1 then
+                     U.Strength := U.Strength - 1;
+                     Log (Unit_Name (I) & " is out of supply and loses"
+                          & " strength");
+                  end if;
+               else
+                  U.Cut_Turns := 0;
+               end if;
+            end if;
+         end;
+      end loop;
       for U of G.Units loop
          if U.Alive and then U.Side = S then
-            if not U.Has_Moved and then not Is_Air (G.Types (U.Kind)) then
+            if not U.Has_Moved and then not Is_Air (G.Types (U.Kind))
+              and then not Is_Naval (G.Types (U.Kind))
+            then
                U.Entrench := Natural'Min (U.Entrench + 1, G.Era.Max_Entrench);
             end if;
             U.Moves_Left   := G.Types (U.Kind).Movement;
@@ -1172,6 +1449,48 @@ package body Engine.Game is
       end if;
    end Begin_Side_Turn;
 
+   procedure Resolve_Supply_Edges is
+      Sum_C, Sum_R : array (Player_Side) of Float := (others => 0.0);
+      N            : array (Player_Side) of Natural := (others => 0);
+      DC, DR       : Float;
+   begin
+      for U of G.Units loop
+         if U.Alive and then G.Types (U.Kind).Mover not in Air | Naval then
+            Sum_C (U.Side) := Sum_C (U.Side) + Float (U.Pos.Col);
+            Sum_R (U.Side) := Sum_R (U.Side) + Float (U.Pos.Row);
+            N (U.Side) := N (U.Side) + 1;
+         end if;
+      end loop;
+      if N (1) = 0 or else N (2) = 0 or else G.Cols = 0 or else G.Rows = 0
+      then
+         for S in Player_Side loop
+            if G.Supply_Edge (S) = Auto then
+               G.Supply_Edge (S) := No_Edge;
+            end if;
+         end loop;
+         return;
+      end if;
+      DC := (Sum_C (1) / Float (N (1)) - Sum_C (2) / Float (N (2)))
+        / Float (G.Cols);
+      DR := (Sum_R (1) / Float (N (1)) - Sum_R (2) / Float (N (2)))
+        / Float (G.Rows);
+      for S in Player_Side loop
+         if G.Supply_Edge (S) = Auto then
+            declare
+               Sign : constant Float := (if S = 1 then 1.0 else -1.0);
+            begin
+               if abs DC >= abs DR then
+                  G.Supply_Edge (S) :=
+                    (if Sign * DC < 0.0 then West else East);
+               else
+                  G.Supply_Edge (S) :=
+                    (if Sign * DR < 0.0 then North else South);
+               end if;
+            end;
+         end if;
+      end loop;
+   end Resolve_Supply_Edges;
+
    procedure Start_Game is
    begin
       FR.Reset (Gen);
@@ -1183,8 +1502,11 @@ package body Engine.Game is
       G.Current := G.First;
       G.Winner  := 0;
       G.Loaded  := True;
+      G.Weather  := Roll_Weather (1);
+      G.Forecast := Roll_Weather (2);
       Log ("=== " & To_String (G.Title) & " ===");
       Log ("Turn 1: " & To_String (G.Sides (G.Current).Name));
+      Announce_Weather;
       Begin_Side_Turn (G.Current);
    end Start_Game;
 
@@ -1284,7 +1606,9 @@ package body Engine.Game is
          return;
       end if;
       for U of G.Units loop
-         if U.Alive and then not Is_Air (G.Types (U.Kind)) then
+         if U.Alive and then not Is_Air (G.Types (U.Kind))
+           and then not Is_Naval (G.Types (U.Kind))
+         then
             Alive (U.Side) := Alive (U.Side) + 1;
          end if;
       end loop;
@@ -1307,8 +1631,9 @@ package body Engine.Game is
          declare
             U : Unit renames G.Units (I);
          begin
+            --  Grounded aircraft sit it out on a field strip.
             if U.Alive and then U.Side = Ending and then Is_Air (I)
-              and then not On_Own_Base (I)
+              and then not On_Own_Base (I) and then not Grounded
             then
                if not U.Has_Moved then
                   U.Fuel := U.Fuel - Natural'Min (U.Fuel, 5);
@@ -1328,9 +1653,22 @@ package body Engine.Game is
             return;
          end if;
          G.Turn := G.Turn + 1;
+         declare
+            Was : constant Weather_Kind := G.Weather;
+         begin
+            G.Weather  := G.Forecast;
+            G.Forecast := Roll_Weather (G.Turn + 1);
+            Log ("Turn" & Positive'Image (G.Turn) & ": "
+                 & To_String (G.Sides (G.Current).Name));
+            if G.Weather /= Was then
+               Raise_Event ("weather");
+            end if;
+            Announce_Weather;
+         end;
+      else
+         Log ("Turn" & Positive'Image (G.Turn) & ": "
+              & To_String (G.Sides (G.Current).Name));
       end if;
-      Log ("Turn" & Positive'Image (G.Turn) & ": "
-           & To_String (G.Sides (G.Current).Name));
       Begin_Side_Turn (G.Current);
    end End_Turn;
 

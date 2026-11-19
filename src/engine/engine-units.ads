@@ -7,7 +7,7 @@ package Engine.Units is
 
    type Unit_Class is
      (Infantry, Cavalry, Armor, Recon, Artillery, Anti_Tank, Anti_Air,
-      Engineer, Fortification, Fighter, Bomber);
+      Engineer, Fortification, Fighter, Bomber, Warship);
 
    type Target_Kind is (Soft, Hard, Air);
 
@@ -60,6 +60,7 @@ package Engine.Units is
       Has_Attacked : Boolean     := False;
       Alive        : Boolean     := True;
       Core         : Boolean     := False; --  campaign core unit
+      Cut_Turns    : Natural     := 0;     --  turns spent out of supply
       --  What each side last saw of this unit (fog of war memory).
       Seen_Pos     : Hex_Per_Side := (others => No_Hex);
       Seen_Turn    : Int_Per_Side := (others => -100);
@@ -73,6 +74,7 @@ package Engine.Units is
      (Natural'Min (U.Experience / 100, 5));
 
    function Is_Air (T : Unit_Type) return Boolean is (T.Mover = Air);
+   function Is_Naval (T : Unit_Type) return Boolean is (T.Mover = Naval);
 
    --  The attack stat used against a given kind of target.
    function Attack_Stat (T : Unit_Type; K : Target_Kind) return Natural is

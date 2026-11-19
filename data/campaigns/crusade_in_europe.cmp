@@ -1,0 +1,9 @@
+title Crusade in Europe (1944)
+era ww2
+description Command an Allied corps from the D-Day beaches to the snows of the
+description Ardennes: first break out of the Normandy beachhead, then hold the
+description road junctions when the enemy strikes back in the winter offensive.
+player 1
+prestige 0
+stage id=normandy file=ww2_normandy.scn win=bastogne loss=bastogne
+stage id=bastogne file=ww2_bastogne.scn win=victory  loss=defeat

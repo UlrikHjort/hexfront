@@ -1,4 +1,5 @@
 with Ada.Numerics;                 use Ada.Numerics;
+with Interfaces;
 with Ada.Numerics.Elementary_Functions;
 with Ada.Strings.Unbounded;        use Ada.Strings.Unbounded;
 with Engine;                       use Engine;
@@ -302,6 +303,10 @@ package body Map_Render is
    -- Unit counters --
    -------------------
 
+   type Gdouble_Array_2 is array (Positive range <>) of Gdouble;
+
+   function Era_Is_WW1 return Boolean is (To_String (G.Era.Id) = "ww1");
+
    procedure Draw_Symbol (Cr : Cairo_Context; C : Unit_Class;
                           X, Y, W, H : Gdouble) is
    begin
@@ -382,8 +387,149 @@ package body Map_Render is
             Fill (Cr);
             Rectangle (Cr, X + 2.0, Y + H * 0.4, W - 4.0, H * 0.45);
             Stroke (Cr);
+         when Warship =>
+            --  Hull with a superstructure.
+            Move_To (Cr, X + W * 0.05, Y + H * 0.55);
+            Line_To (Cr, X + W * 0.95, Y + H * 0.55);
+            Line_To (Cr, X + W * 0.80, Y + H * 0.85);
+            Line_To (Cr, X + W * 0.20, Y + H * 0.85);
+            Close_Path (Cr);
+            Fill (Cr);
+            Rectangle (Cr, X + W * 0.38, Y + H * 0.25, W * 0.22, H * 0.3);
+            Fill (Cr);
       end case;
    end Draw_Symbol;
+
+   --  Side-view silhouettes, drawn into the box X, Y, W, H.
+   procedure Draw_Silhouette (Cr : Cairo_Context; T : Unit_Type;
+                              X, Y, W, H : Gdouble)
+   is
+      function PX (F : Gdouble) return Gdouble is (X + F * W);
+      function PY (F : Gdouble) return Gdouble is (Y + F * H);
+
+      procedure Poly (Pts : Gdouble_Array_2) is
+      begin
+         Move_To (Cr, PX (Pts (Pts'First)), PY (Pts (Pts'First + 1)));
+         for I in 1 .. Pts'Length / 2 - 1 loop
+            Line_To (Cr, PX (Pts (Pts'First + 2 * I)),
+                     PY (Pts (Pts'First + 2 * I + 1)));
+         end loop;
+         Close_Path (Cr);
+         Fill (Cr);
+      end Poly;
+
+      procedure Wheel (FX, FY, FR : Gdouble) is
+      begin
+         Arc (Cr, PX (FX), PY (FY), FR * H, 0.0, 2.0 * Pi);
+         Fill (Cr);
+      end Wheel;
+
+      procedure Bar (X1, Y1, X2, Y2, LW : Gdouble) is
+      begin
+         Set_Line_Width (Cr, LW);
+         Move_To (Cr, PX (X1), PY (Y1));
+         Line_To (Cr, PX (X2), PY (Y2));
+         Stroke (Cr);
+      end Bar;
+
+      procedure Soldier (FX : Gdouble; Rifle : Boolean) is
+      begin
+         Arc (Cr, PX (FX), PY (0.18), 0.12 * H, 0.0, 2.0 * Pi);
+         Fill (Cr);
+         Poly ((FX - 0.07, 0.32, FX + 0.07, 0.32, FX + 0.06, 0.66,
+                FX - 0.06, 0.66));
+         Bar (FX - 0.03, 0.64, FX - 0.08, 1.0, 1.6);
+         Bar (FX + 0.03, 0.64, FX + 0.08, 1.0, 1.6);
+         if Rifle then
+            Bar (FX - 0.1, 0.75, FX + 0.14, 0.05, 1.0);
+         end if;
+      end Soldier;
+   begin
+      Color (Cr, 0.08, 0.08, 0.08, 0.85);
+      case T.Class is
+         when Infantry =>
+            Soldier (0.3, True);
+            Soldier (0.7, True);
+         when Engineer =>
+            Soldier (0.35, False);
+            --  Spade
+            Bar (0.55, 0.2, 0.8, 0.85, 1.4);
+            Poly ((0.75, 0.75, 0.9, 0.8, 0.85, 1.0, 0.72, 0.95));
+         when Cavalry =>
+            --  Horse with rider.
+            Poly ((0.12, 0.45, 0.72, 0.45, 0.78, 0.25, 0.92, 0.3,
+                   0.86, 0.45, 0.8, 0.65, 0.18, 0.65));
+            Bar (0.22, 0.62, 0.18, 1.0, 1.6);
+            Bar (0.34, 0.62, 0.36, 1.0, 1.6);
+            Bar (0.66, 0.62, 0.62, 1.0, 1.6);
+            Bar (0.76, 0.62, 0.80, 1.0, 1.6);
+            Arc (Cr, PX (0.45), PY (0.05), 0.1 * H, 0.0, 2.0 * Pi);
+            Fill (Cr);
+            Poly ((0.4, 0.14, 0.5, 0.14, 0.52, 0.45, 0.38, 0.45));
+         when Armor =>
+            Poly ((0.05, 0.62, 0.95, 0.62, 0.85, 0.95, 0.15, 0.95));
+            Poly ((0.12, 0.42, 0.88, 0.42, 0.92, 0.62, 0.08, 0.62));
+            Poly ((0.3, 0.2, 0.62, 0.2, 0.66, 0.42, 0.26, 0.42));
+            Bar (0.62, 0.3, 1.0, 0.27, 1.8);
+         when Recon =>
+            if T.Mover = Horse then
+               Poly ((0.15, 0.45, 0.72, 0.45, 0.8, 0.28, 0.92, 0.32,
+                      0.82, 0.62, 0.2, 0.62));
+               Bar (0.25, 0.6, 0.2, 1.0, 1.4);
+               Bar (0.72, 0.6, 0.78, 1.0, 1.4);
+               Arc (Cr, PX (0.45), PY (0.12), 0.1 * H, 0.0, 2.0 * Pi);
+               Fill (Cr);
+            elsif T.Mover = Foot then
+               Soldier (0.5, True);
+            else
+               Poly ((0.05, 0.4, 0.75, 0.4, 0.95, 0.6, 0.95, 0.78,
+                      0.05, 0.78));
+               Poly ((0.3, 0.2, 0.55, 0.2, 0.58, 0.4, 0.28, 0.4));
+               Wheel (0.22, 0.82, 0.16);
+               Wheel (0.75, 0.82, 0.16);
+            end if;
+         when Artillery =>
+            Bar (0.1, 0.85, 0.95, 0.25, 2.6);
+            Wheel (0.42, 0.72, 0.26);
+            Bar (0.42, 0.72, 0.05, 0.98, 1.6);
+         when Anti_Tank =>
+            Poly ((0.35, 0.3, 0.55, 0.3, 0.55, 0.75, 0.35, 0.75));
+            Bar (0.5, 0.5, 1.0, 0.45, 1.8);
+            Wheel (0.42, 0.82, 0.16);
+            Bar (0.4, 0.75, 0.05, 0.98, 1.4);
+         when Anti_Air =>
+            Bar (0.35, 0.8, 0.85, 0.05, 2.0);
+            Bar (0.45, 0.8, 0.95, 0.12, 1.4);
+            Poly ((0.15, 0.7, 0.75, 0.7, 0.85, 0.95, 0.05, 0.95));
+         when Fortification =>
+            Arc (Cr, PX (0.5), PY (0.95), 0.75 * H, Pi, 2.0 * Pi);
+            Fill (Cr);
+            Color (Cr, 0.95, 0.9, 0.8);
+            Rectangle (Cr, PX (0.3), PY (0.55), 0.4 * W, 0.12 * H);
+            Fill (Cr);
+         when Fighter | Bomber =>
+            declare
+               Big : constant Gdouble :=
+                 (if T.Class = Bomber then 1.0 else 0.0);
+            begin
+               --  Fuselage nose right, wing, tail fin.
+               Poly ((0.02, 0.45, 0.85, 0.4 - 0.05 * Big, 1.0, 0.5,
+                      0.85, 0.6 + 0.05 * Big, 0.02, 0.55));
+               Poly ((0.4, 0.5, 0.6, 0.5, 0.45 + 0.05 * Big, 0.95,
+                      0.33 - 0.05 * Big, 0.95));
+               Poly ((0.02, 0.45, 0.12, 0.45, 0.08, 0.1, 0.0, 0.1));
+               if T.Class = Fighter and then Era_Is_WW1 then
+                  Bar (0.3, 0.2, 0.62, 0.2, 2.0);   --  upper wing
+               end if;
+            end;
+         when Warship =>
+            Poly ((0.0, 0.55, 1.0, 0.55, 0.88, 0.9, 0.08, 0.9));
+            Poly ((0.35, 0.3, 0.62, 0.3, 0.62, 0.55, 0.35, 0.55));
+            Poly ((0.44, 0.08, 0.52, 0.08, 0.52, 0.3, 0.44, 0.3));
+            Bar (0.68, 0.48, 0.92, 0.44, 1.6);
+            Bar (0.30, 0.48, 0.08, 0.44, 1.6);
+      end case;
+   end Draw_Silhouette;
 
    function Img (N : Integer) return String is
       S : constant String := Integer'Image (N);
@@ -429,14 +575,22 @@ package body Map_Render is
          Rectangle (Cr, X0 + 0.5, Y0 + 0.5, W - 1.0, 2.5);
          Fill (Cr);
       end if;
-      --  Symbol box
-      Color (Cr, 0.95, 0.94, 0.88);
-      Rectangle (Cr, X0 + 7.0, Y0 + 3.0, W - 14.0, 13.0);
-      Fill_Preserve (Cr);
-      Color (Cr, 0.1, 0.1, 0.1);
-      Set_Line_Width (Cr, 1.0);
-      Stroke (Cr);
-      Draw_Symbol (Cr, T.Class, X0 + 7.0, Y0 + 3.0, W - 14.0, 13.0);
+      if Silhouettes then
+         --  Light panel with the silhouette.
+         Color (Cr, 0.93, 0.91, 0.84, 0.9);
+         Rectangle (Cr, X0 + 3.0, Y0 + 3.0, W - 6.0, H - 15.0);
+         Fill (Cr);
+         Draw_Silhouette (Cr, T, X0 + 5.0, Y0 + 4.0, W - 10.0, H - 17.0);
+      else
+         --  Symbol box
+         Color (Cr, 0.95, 0.94, 0.88);
+         Rectangle (Cr, X0 + 7.0, Y0 + 3.0, W - 14.0, 13.0);
+         Fill_Preserve (Cr);
+         Color (Cr, 0.1, 0.1, 0.1);
+         Set_Line_Width (Cr, 1.0);
+         Stroke (Cr);
+         Draw_Symbol (Cr, T.Class, X0 + 7.0, Y0 + 3.0, W - 14.0, 13.0);
+      end if;
       --  Strength (dark text on light counters)
       if 0.3 * Side.R + 0.59 * Side.G + 0.11 * Side.B > 0.62 then
          Color (Cr, 0.1, 0.1, 0.1);
@@ -464,6 +618,26 @@ package body Map_Render is
          Arc (Cr, X0 + W, Y0, 3.5, 0.0, 2.0 * Pi);
          Fill (Cr);
       end if;
+      --  Supply state: amber or red corner triangle.
+      declare
+         L : constant Supply_Level := Supply_Of (U);
+      begin
+         if L /= Supplied then
+            if L = Cut_Off then
+               Color (Cr, 0.95, 0.1, 0.1);
+            else
+               Color (Cr, 1.0, 0.7, 0.1);
+            end if;
+            Move_To (Cr, X0, Y0 + H);
+            Line_To (Cr, X0 + 9.0, Y0 + H);
+            Line_To (Cr, X0, Y0 + H - 9.0);
+            Close_Path (Cr);
+            Fill_Preserve (Cr);
+            Color (Cr, 0.1, 0.1, 0.1);
+            Set_Line_Width (Cr, 0.8);
+            Stroke (Cr);
+         end if;
+      end;
       if Spent then
          Color (Cr, 0.0, 0.0, 0.0, 0.35);
          Rectangle (Cr, X0, Y0, W, H);
@@ -476,6 +650,69 @@ package body Map_Render is
          Stroke (Cr);
       end if;
    end Draw_Unit;
+
+   ------------------
+   -- Weather look --
+   ------------------
+
+   procedure Draw_Weather (Cr : Cairo_Context) is
+      MW : constant Gdouble := 2.0 * Margin + Radius * 2.0
+        + Gdouble (Integer'Max (G.Cols - 1, 0)) * 1.5 * Radius;
+      MH : constant Gdouble := 2.0 * Margin + Hex_H * (Gdouble (G.Rows) + 0.5);
+      --  Cheap repeatable scatter (integer hash, 0.0 .. 1.0).
+      function Hash (I : Natural; K : Natural) return Gdouble is
+         use Interfaces;
+         X : Unsigned_32 := Unsigned_32 (I) * 16#9E37_79B1#
+           xor Unsigned_32 (K) * 16#85EB_CA77#;
+      begin
+         X := X xor Shift_Right (X, 15);
+         X := X * 16#2C1B_3C6D#;
+         X := X xor Shift_Right (X, 12);
+         X := X * 16#297A_2D39#;
+         X := X xor Shift_Right (X, 15);
+         return Gdouble (X mod 10_000) / 10_000.0;
+      end Hash;
+      N : constant Natural := Natural (MW * MH / 900.0);
+   begin
+      case G.Weather is
+         when Fair =>
+            null;
+         when Overcast =>
+            Color (Cr, 0.15, 0.17, 0.22, 0.12);
+            Rectangle (Cr, 0.0, 0.0, MW, MH);
+            Fill (Cr);
+         when Rain =>
+            Color (Cr, 0.10, 0.14, 0.25, 0.16);
+            Rectangle (Cr, 0.0, 0.0, MW, MH);
+            Fill (Cr);
+            Color (Cr, 0.75, 0.82, 0.95, 0.35);
+            Set_Line_Width (Cr, 1.0);
+            for I in 1 .. N loop
+               declare
+                  X : constant Gdouble := Hash (I, 1) * MW;
+                  Y : constant Gdouble := Hash (I, 2) * MH;
+               begin
+                  Move_To (Cr, X, Y);
+                  Line_To (Cr, X - 4.0, Y + 11.0);
+               end;
+            end loop;
+            Stroke (Cr);
+         when Snow =>
+            Color (Cr, 1.0, 1.0, 1.0, 0.22);
+            Rectangle (Cr, 0.0, 0.0, MW, MH);
+            Fill (Cr);
+            Color (Cr, 1.0, 1.0, 1.0, 0.75);
+            for I in 1 .. N loop
+               Arc (Cr, Hash (I, 3) * MW, Hash (I, 4) * MH,
+                    0.8 + 1.2 * Hash (I, 5), 0.0, 2.0 * Pi);
+               Fill (Cr);
+            end loop;
+         when Mist =>
+            Color (Cr, 0.88, 0.89, 0.9, 0.30);
+            Rectangle (Cr, 0.0, 0.0, MW, MH);
+            Fill (Cr);
+      end case;
+   end Draw_Weather;
 
    ----------
    -- Draw --
@@ -588,6 +825,35 @@ package body Map_Render is
          end loop;
       end if;
 
+      --  Supply overlay for the viewing side
+      if V.Show_Supply then
+         declare
+            S : constant Player_Side :=
+              (if V.Viewer in Player_Side then V.Viewer else G.Current);
+         begin
+            for C in 0 .. G.Cols - 1 loop
+               for R in 0 .. G.Rows - 1 loop
+                  if Terrain_At ((C, R)) /= Water then
+                     case Supply_At ((C, R), S) is
+                        when Supplied => null;
+                        when Low_Supply =>
+                           Hex_Path (Cr, Center_X ((C, R)), Center_Y ((C, R)));
+                           Color (Cr, 1.0, 0.65, 0.0, 0.22);
+                           Fill (Cr);
+                        when Cut_Off =>
+                           Hex_Path (Cr, Center_X ((C, R)), Center_Y ((C, R)));
+                           Color (Cr, 0.85, 0.0, 0.0, 0.28);
+                           Fill (Cr);
+                     end case;
+                  end if;
+               end loop;
+            end loop;
+         end;
+      end if;
+
+      --  Weather
+      Draw_Weather (Cr);
+
       --  Deployment hexes for a purchase
       if V.Deploy_Type /= 0 then
          for C in 0 .. G.Cols - 1 loop
@@ -657,6 +923,114 @@ package body Map_Render is
 
       Anim.Draw_Overlay (Cr);
    end Draw;
+
+   ---------------
+   -- Minimap --
+   ---------------
+
+   function Map_Width return Gdouble is
+     (2.0 * Margin + Radius * 2.0
+      + Gdouble (Integer'Max (G.Cols - 1, 0)) * 1.5 * Radius);
+   function Map_Height return Gdouble is
+     (2.0 * Margin + Hex_H * (Gdouble (G.Rows) + 0.5));
+
+   procedure Mini_Scale (W, H : Gdouble; S, OX, OY : out Gdouble) is
+   begin
+      S  := Gdouble'Min (W / Map_Width, H / Map_Height);
+      OX := (W - S * Map_Width) / 2.0;
+      OY := (H - S * Map_Height) / 2.0;
+   end Mini_Scale;
+
+   procedure Minimap_To_Map (MX, MY, W, H : Gdouble; X, Y : out Gdouble) is
+      S, OX, OY : Gdouble;
+   begin
+      Mini_Scale (W, H, S, OX, OY);
+      X := (MX - OX) / S;
+      Y := (MY - OY) / S;
+   end Minimap_To_Map;
+
+   procedure Draw_Minimap (Cr : Cairo_Context; W, H : Gdouble;
+                           Viewer : Engine.Side_Id;
+                           VX, VY, VW, VH : Gdouble)
+   is
+      S, OX, OY : Gdouble;
+   begin
+      Color (Cr, 0.12, 0.13, 0.12);
+      Paint (Cr);
+      if not G.Loaded or else G.Cols = 0 then
+         return;
+      end if;
+      Mini_Scale (W, H, S, OX, OY);
+      Save (Cr);
+      Translate (Cr, OX, OY);
+      Scale (Cr, S, S);
+      for C in 0 .. G.Cols - 1 loop
+         for R in 0 .. G.Rows - 1 loop
+            declare
+               Hx : constant Hex := (C, R);
+               T  : constant Terrain_Kind := Terrain_At (Hx);
+               Sh : constant Shade :=
+                 (if T = River then (0.40, 0.58, 0.85)
+                  elsif T = Road then (0.78, 0.72, 0.55)
+                  else Terrain_Color (T));
+               Ce : constant Cell := G.Cells (C, R);
+            begin
+               Hex_Path (Cr, Center_X (Hx), Center_Y (Hx), 1.05);
+               Color (Cr, Sh.R, Sh.G, Sh.B);
+               Fill (Cr);
+               if Ce.Owner /= 0 and then Is_Capturable (Ce.Terrain) then
+                  declare
+                     O : constant RGB := G.Sides (Ce.Owner).Color;
+                  begin
+                     Hex_Path (Cr, Center_X (Hx), Center_Y (Hx), 0.8);
+                     Color (Cr, Gdouble (O.R), Gdouble (O.G), Gdouble (O.B));
+                     Fill (Cr);
+                  end;
+               end if;
+               if Ce.Victory then
+                  Hex_Path (Cr, Center_X (Hx), Center_Y (Hx), 0.9);
+                  Color (Cr, 1.0, 0.85, 0.1);
+                  Set_Line_Width (Cr, 8.0);
+                  Stroke (Cr);
+               end if;
+               if Viewer in Player_Side and then G.Fog
+                 and then not G.Seen (Viewer) (C, R)
+               then
+                  Hex_Path (Cr, Center_X (Hx), Center_Y (Hx), 1.05);
+                  Color (Cr, 0.0, 0.0, 0.0, 0.35);
+                  Fill (Cr);
+               end if;
+            end;
+         end loop;
+      end loop;
+      for I in G.Units.First_Index .. G.Units.Last_Index loop
+         declare
+            U : constant Unit := Get (I);
+         begin
+            if U.Alive
+              and then (Viewer = 0 or else Visible (I, Viewer))
+            then
+               declare
+                  O : constant RGB := G.Sides (U.Side).Color;
+               begin
+                  Rectangle (Cr, Center_X (U.Pos) - 18.0,
+                             Center_Y (U.Pos) - 14.0, 36.0, 28.0);
+                  Color (Cr, Gdouble (O.R), Gdouble (O.G), Gdouble (O.B));
+                  Fill_Preserve (Cr);
+                  Color (Cr, 0.0, 0.0, 0.0);
+                  Set_Line_Width (Cr, 5.0);
+                  Stroke (Cr);
+               end;
+            end if;
+         end;
+      end loop;
+      --  Visible part of the map.
+      Rectangle (Cr, VX, VY, VW, VH);
+      Color (Cr, 1.0, 1.0, 1.0, 0.9);
+      Set_Line_Width (Cr, 2.0 / S);
+      Stroke (Cr);
+      Restore (Cr);
+   end Draw_Minimap;
 
    ------------------
    -- Draw_Preview --

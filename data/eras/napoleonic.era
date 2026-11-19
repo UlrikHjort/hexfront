@@ -1,7 +1,7 @@
 # Napoleonic era definition. No vehicles; cavalry shock against
 # troops in the open, infantry forms square against horsemen.
 era name=Napoleonic_Wars
-rule max_entrench=2 charge_bonus=5 square_bonus=5 close_armor_penalty=0
+rule max_entrench=2 charge_bonus=5 square_bonus=5 close_armor_penalty=0 supply_range=10
 
 unit id=line      name=Line_Infantry   class=infantry  move=foot  target=soft mp=3 soft=6 hard=0 def=6 ammo=8 cost=120
 unit id=light     name=Light_Infantry  class=infantry  move=foot  target=soft mp=4 soft=5 hard=0 def=6 ammo=8 cost=130

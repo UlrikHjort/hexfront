@@ -13,6 +13,7 @@ package body Engine.Units is
          when Bomber        => return "Bomber";
          when Engineer      => return "Engineers";
          when Fortification => return "Fortification";
+         when Warship       => return "Warship";
       end case;
    end Class_Name;
 end Engine.Units;

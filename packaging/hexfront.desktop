@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Hexfront
+GenericName=Turn-based wargame
+Comment=Operational hex wargame: WW2, WW1, Napoleonic and Civil War battles
+Exec=hexfront
+Icon=hexfront
+Terminal=false
+Categories=Game;StrategyGame;
+Keywords=wargame;strategy;hex;turn-based;
