@@ -2,7 +2,7 @@
 --
 --  render_png scenario.scn out.png [options]
 --  options (comma separated): sil      unit silhouettes
---                             supply   supply overlay for side 1
+--                             supply   supply overlay for the side to move
 --                             turns=N  let the computer play N turns first
 --                             rain|snow|fog|overcast  force the weather
 --                             mini     also write out.png.mini.png

@@ -4,6 +4,8 @@ A turn-based operational hex wargame in the classic style,
 written in Ada 2012 with GtkAda (GTK3). One era-neutral engine, with eras and
 scenarios defined in plain text data files.
 
+![The game window: Normandy, 1944, an infantry unit selected with its movement range, the minimap and the unit panel](docs/screenshots/game_window.png)
+
 ## Features
 
 * Era-neutral engine; WW2, WW1, Napoleonic and American Civil War eras
@@ -53,6 +55,20 @@ scenarios defined in plain text data files.
 * Undo the last move (Ctrl+Z) when it revealed nothing new
 * Built-in scenario editor (Game > Scenario editor): paint terrain, place
   units, towns and objectives, set up sides, save and play-test
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Normandy](docs/screenshots/normandy.png) | ![Bastogne in snow](docs/screenshots/bastogne.png) |
+| **Normandy, 1944:** warships off the beaches, unit silhouettes | **Bastogne, 1944:** snow slows ground movement, NATO symbols |
+| ![Gettysburg in rain](docs/screenshots/gettysburg.png) | ![Waterloo](docs/screenshots/waterloo.png) |
+| **Gettysburg, 1863:** rain, unit silhouettes | **Waterloo, 1815:** Napoleonic era |
+| ![Supply overlay](docs/screenshots/supply.png) | ![Scenario chooser](docs/screenshots/chooser.png) |
+| **Supply overlay:** orange is low supply, red is cut off | **Scenario chooser** with map preview and briefing |
+
+The map images are rendered headlessly with `make screenshots` (needs
+ImageMagick); the window shots were taken under Xvfb.
 
 ## Build & run
 
