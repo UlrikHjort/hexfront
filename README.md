@@ -165,3 +165,8 @@ Units marked `core` are the slots filled by the player's surviving units.
 
 Terrain glyphs: `.` clear `=` road `f` forest `h` hills `M` mountain `~` river
 `s` swamp `t` town `C` city `F` fortress `w` water `#` trench `A` airfield.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Copyright (C) 2026 Ulrik Hørlyk Hjort.
+Every source file carries the header in `HEADER.txt`.
