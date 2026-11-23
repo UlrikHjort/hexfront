@@ -169,4 +169,4 @@ Terrain glyphs: `.` clear `=` road `f` forest `h` hills `M` mountain `~` river
 ## License
 
 MIT, see [LICENSE](LICENSE). Copyright (C) 2026 Ulrik Hørlyk Hjort.
-Every source file carries the header in `HEADER.txt`.
+Every source file carries the MIT license header.
